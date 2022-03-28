@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: ECS Cluster Template for CloudFormation Demo. Depends on cfn-vpc.yaml, cfn-ngw.yaml, cfn-sg.yaml, cfn-iam.yaml
+
+#Metadata:
+
+Parameters:
+  StackPrefix:
+    Description: Stack Resource Name Prefix
+    Type: String
+    Default: Demo
+  EnvironmentType:
+    Description: The environment type
+    Type: String
+    AllowedValues: ["Dev", "Staging", "Production"]
+    Default: Production
+    ConstraintDescription: must be a prod or test
+Mappings:
+  FrontendClusterDefinitionMap:
+    Production:
+      "TaskCpu": 256
+      "TaskMemory": 512
+    Staging:
+      "TaskCpu": 256
+      "TaskMemory": 512      
+    Dev:
+      "TaskCpu": 256
+      "TaskMemory": 512      
+  BackendClusterDefinitionMap:
+    Production:
+      "TaskCpu": 256
+      "TaskMemory": 512
+    Staging:
+      "TaskCpu": 256
+      "TaskMemory": 512      
+    Dev:
+      "TaskCpu": 256
+      "TaskMemory": 512
+
+#Conditions:
+
+Resources:
+  #ECS Cluster for Frontend
+  FrontendECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub ${StackPrefix}-Frontend-Cluster
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-Frontend-Cluster
+  #ECS Cluster for Backend
+  BackendECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub ${StackPrefix}-Backtend-Cluster
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-Backend-Cluster
+
+Outputs:
+  FrontendECSCluster:
+    Description: Frontend ECS Cluster ID
+    Value: !Ref FrontendECSCluster
+    Export:
+      Name: !Sub ${StackPrefix}-Frontend-ECSCluster
+  FrontendECSClusterName:
+    Description: Frontend ECS Cluster Name
+    Value: !Sub ${StackPrefix}-Frontend-Cluster
+    Export:
+      Name: !Sub ${StackPrefix}-Frontend-ECSCluster-Name
+  BackendECSCluster:
+    Description: Backend ECS Cluster ID
+    Value: !Ref BackendECSCluster
+    Export:
+      Name: !Sub ${StackPrefix}-Backend-ECSCluster
+  BackendECSClusterName:
+    Description: Backend ECS Cluster Name
+    Value: !Sub ${StackPrefix}-Backtend-Cluster
+    Export:
+      Name: !Sub ${StackPrefix}-Backend-ECSCluster-Name
