@@ -48,12 +48,11 @@ aws cloudformation create-stack --stack-name ECS-IAM-Stack --template-body file:
 aws cloudformation validate-template --template-body file://cfn-alb.yaml
 aws cloudformation create-stack --stack-name ECS-ALB-Stack --template-body file://cfn-alb.yaml
 ```
+* TODO: 手順削除検討
+* ~~ECS上のアプリ用のTarget Group, Listener~~  
+~~aws cloudformation validate-template --template-body file://cfn-tg.yaml~~
+~~aws cloudformation create-stack --stack-name ECS-TG-Stack --template-body file://cfn-tg.yaml~~
 
-* ECS上のアプリ用のTarget Group, Listener
-```sh
-aws cloudformation validate-template --template-body file://cfn-tg.yaml
-aws cloudformation create-stack --stack-name ECS-TG-Stack --template-body file://cfn-tg.yaml
-```
 
 ## 6. ECSクラスタの作成
 ```sh
@@ -81,7 +80,8 @@ aws cloudformation create-stack --stack-name ECS-SERVICE-Stack --template-body f
 ## 9. APの実行確認
 * ブラウザで「http://(Public ALBのDNS名)/backend-for-frontend/index.html」を入力するとフロントエンドAPの画面表示
 * VPCのパブリックサブネット上にEC2を起動し
-　「curl 「http://(Private ALBのDNS名)/backend/api/v1/users」を入力するとバックエンドサービスAPのJSON返却
+　「curl http://(Private ALBのDNS名)/backend/api/v1/users」を入力するとバックエンドサービスAPのJSON返却
+  * TODO: bastion EC2を作成するCfnテンプレート作成
 
 # CD環境
 ## 1. CodePipelineの作成
@@ -98,9 +98,6 @@ aws cloudformation create-stack --stack-name Backend-CodePipeline-Stack --templa
   * 環境変数から読み込む対応をできていないためです。このため、APでエラーが発生すると思います。
   * プッシュすると、CodePipelineのパイプラインが起動し最新のDockerイメージでECRへデプロイしてくれます
   * その後、APが正しく動きます。
-
-## TODO: APのデプロイが終わらない  
-
 
 # CloudFormationコマンド文法メモ
 * スタックの新規作成

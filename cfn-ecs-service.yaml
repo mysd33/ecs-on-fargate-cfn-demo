@@ -59,7 +59,8 @@ Resources:
         - ContainerName: !FindInMap [FrontendWebAppMap, !Ref EnvironmentType, ContainerName]
           ContainerPort: !FindInMap [FrontendWebAppMap, !Ref EnvironmentType, ContainerPort]
           TargetGroupArn:
-            Fn::ImportValue: !Sub ${StackPrefix}-Frontend-TargetGroup
+#            Fn::ImportValue: !Sub ${StackPrefix}-Frontend-TargetGroup
+            Fn::ImportValue: !Sub ${StackPrefix}-PubALB-DefaultTargetGroup
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: ENABLED
@@ -83,7 +84,8 @@ Resources:
         - ContainerName: !FindInMap [BackendServiceMap, !Ref EnvironmentType, ContainerName]
           ContainerPort: !FindInMap [BackendServiceMap, !Ref EnvironmentType, ContainerPort]
           TargetGroupArn:
-            Fn::ImportValue: !Sub ${StackPrefix}-Backend-TargetGroup
+#            Fn::ImportValue: !Sub ${StackPrefix}-Backend-TargetGroup
+            Fn::ImportValue: !Sub ${StackPrefix}-PrivALB-DefaultTargetGroup
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: DISABLED
