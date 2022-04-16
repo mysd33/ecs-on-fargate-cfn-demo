@@ -18,11 +18,7 @@ aws cloudformation create-stack --stack-name BFF-CodeBuild-Stack --template-body
 aws cloudformation validate-template --template-body file://cfn-backend-codebuild.yaml
 aws cloudformation create-stack --stack-name Backend-CodeBuild-Stack --template-body file://cfn-backend-codebuild.yaml --capabilities CAPABILITY_IAM
 ```
-## ↑ここまで動作確認
-## TODO: buildspec.yamlのDockerHubログインのための修正
- 匿名だとDockerHubアクセス回数制限のためにDockerログインしてユーザID、パスワードをSSM ParameterStoreに入れるようにしないとだめだったような。。
-## TODO: CodeBuildのSorceTypeがCodePipeline
-* 今はCodeCommitになっていて動いてはいたみたいだが。。。
+* TODO: CodeBuildのSorceTypeがCodePipeline* 今はCodeCommitになっていて動いてはいたみたいだが。。。
 
 # ECS環境
 ## 1. VPCおよびサブネット、InternetGateway等の作成
@@ -30,7 +26,6 @@ aws cloudformation create-stack --stack-name Backend-CodeBuild-Stack --template-
 aws cloudformation validate-template --template-body file://cfn-vpc.yaml
 aws cloudformation create-stack --stack-name ECS-VPC-Stack --template-body file://cfn-vpc.yaml
 ```
-
 ## 2. NAT Gatewayの作成とプライベートサブネットのルートテーブル更新
 ```sh
 aws cloudformation validate-template --template-body file://cfn-ngw.yaml
@@ -47,13 +42,13 @@ aws cloudformation create-stack --stack-name ECS-SG-Stack --template-body file:/
 aws cloudformation validate-template --template-body file://cfn-iam.yaml
 aws cloudformation create-stack --stack-name ECS-IAM-Stack --template-body file://cfn-iam.yaml --capabilities CAPABILITY_IAM
 ```
-
 ## 5. ALBの作成
 * ALB
 ```sh
 aws cloudformation validate-template --template-body file://cfn-alb.yaml
 aws cloudformation create-stack --stack-name ECS-ALB-Stack --template-body file://cfn-alb.yaml
 ```
+
 * ECS上のアプリ用のTarget Group, Listener
 ```sh
 aws cloudformation validate-template --template-body file://cfn-tg.yaml
@@ -72,12 +67,10 @@ aws cloudformation create-stack --stack-name ECS-CLUSTER-Stack --template-body f
 aws cloudformation validate-template --template-body file://cfn-ecs-task.yaml
 aws cloudformation create-stack --stack-name ECS-TASK-Stack --template-body file://cfn-ecs-task.yaml
 ```
+
 * タスクへのIAMロールの付与
   * TBD: RDS,DynamoDBへのアクセスの必要に応じて
-```sh
-aws cloudformation validate-template --template-body file://cfn-ecs-task-role.yaml
-aws cloudformation create-stack --stack-name ECS-TASK-ROLE-Stack --template-body file://cfn-ecs-task-role.yaml
-```
+    * cfn-iamの.yamlの修正が必要
 
 ## 8. ECSサービスの実行
 ```sh
@@ -89,6 +82,8 @@ aws cloudformation create-stack --stack-name ECS-SERVICE-Stack --template-body f
 * ブラウザで「http://(Public ALBのDNS名)/backend-for-frontend/index.html」を入力するとフロントエンドAPの画面表示
 * VPCのパブリックサブネット上にEC2を起動し
 　「curl 「http://(Private ALBのDNS名)/backend/api/v1/users」を入力するとバックエンドサービスAPのJSON返却
+
+## TODO: BFFのPublicのロードバランサで502/504エラー
 
 # CD環境
 ## 1. CodePipelineの作成
@@ -105,6 +100,8 @@ aws cloudformation create-stack --stack-name Backend-CodePipeline-Stack --templa
   * 環境変数から読み込む対応をできていないためです。このため、APでエラーが発生すると思います。
   * プッシュすると、CodePipelineのパイプラインが起動し最新のDockerイメージでECRへデプロイしてくれます
   * その後、APが正しく動きます。
+
+## TODO: BFFのAPのデプロイが終わらない  
 
 
 # CloudFormationコマンド文法メモ

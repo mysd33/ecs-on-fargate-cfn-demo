@@ -37,7 +37,7 @@ Resources:
             Principal:
               Service: ecs-tasks.amazonaws.com
 
-  #IAM Role for ECS Execution  
+  #IAM Role for ECS Task Execution  
   ECSTaskExecutionRole:
     Type: AWS::IAM::Role
     Properties:

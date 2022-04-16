@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: ECS Cluster Template for CloudFormation Demo. Depends on cfn-vpc.yaml, cfn-ngw.yaml, cfn-sg.yaml, cfn-iam.yaml
+Description: ECS Cluster Template for CloudFormation Demo. 
 
 #Metadata:
 
@@ -8,33 +8,7 @@ Parameters:
     Description: Stack Resource Name Prefix
     Type: String
     Default: Demo
-  EnvironmentType:
-    Description: The environment type
-    Type: String
-    AllowedValues: ["Dev", "Staging", "Production"]
-    Default: Production
-    ConstraintDescription: must be a prod or test
-Mappings:
-  FrontendClusterDefinitionMap:
-    Production:
-      "TaskCpu": 256
-      "TaskMemory": 512
-    Staging:
-      "TaskCpu": 256
-      "TaskMemory": 512      
-    Dev:
-      "TaskCpu": 256
-      "TaskMemory": 512      
-  BackendClusterDefinitionMap:
-    Production:
-      "TaskCpu": 256
-      "TaskMemory": 512
-    Staging:
-      "TaskCpu": 256
-      "TaskMemory": 512      
-    Dev:
-      "TaskCpu": 256
-      "TaskMemory": 512
+#Mappings:
 
 #Conditions:
 

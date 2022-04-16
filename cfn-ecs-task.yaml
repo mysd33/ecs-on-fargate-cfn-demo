@@ -17,64 +17,52 @@ Parameters:
 Mappings: 
   FrontendAppTaskDefinitionMap:
     Production:
-      "DesiredCount": 0  # 作成時はイメージがないので起動しないように設定
       "Memory" : 1024
       "Cpu" : 512
       "ContainerName" : "ecsdemo-frontend-app"
       "ContainerImage" : "523530166249.dkr.ecr.ap-northeast-1.amazonaws.com/mynavi-sample-ecs-bff:latest"
       "ContainerPort" : 8080
-      "HostPort" : 0
       "ContainerMemory" : 1024
       "Profile" : "production"
     Staging:
-      "DesiredCount": 0  # 作成時はイメージがないので起動しないように設定
       "Memory" : 1024
       "Cpu" : 512
       "ContainerName" : "ecsdemo-frontend-app"
       "ContainerImage" : "523530166249.dkr.ecr.ap-northeast-1.amazonaws.com/mynavi-sample-ecs-bff:latest"
-      "ContainerPort" : 8080
-      "HostPort" : 0
+      "ContainerPort" : 8080      
       "ContainerMemory" : 1024
       "Profile" : "staging"
     Dev:
-      "DesiredCount": 0  # 作成時はイメージがないので起動しないように設定
       "Memory" : 1024
       "Cpu" : 512
       "ContainerName" : "ecsdemo-frontend-app"
       "ContainerImage" : "523530166249.dkr.ecr.ap-northeast-1.amazonaws.com/mynavi-sample-ecs-bff:latest"
       "ContainerPort" : 8080
-      "HostPort" : 0
       "ContainerMemory" : 1024
       "Profile" : "dev"
   BackendServiceTaskDefinitionMap:
     Production:
-      "DesiredCount": 0  # 作成時はイメージがないので起動しないように設定
       "Memory" : 1024
       "Cpu" : 512
       "ContainerName" : "ecsdemo-backend-service"
       "ContainerImage" : "523530166249.dkr.ecr.ap-northeast-1.amazonaws.com/mynavi-sample-ecs-backend:latest"
       "ContainerPort" : 8080
-      "HostPort" : 0
       "ContainerMemory" : 1024
       "Profile" : "production"
     Staging:
-      "DesiredCount": 0  # 作成時はイメージがないので起動しないように設定
       "Memory" : 1024
       "Cpu" : 512
       "ContainerName" : "ecsdemo-backend-service"
       "ContainerImage" : "523530166249.dkr.ecr.ap-northeast-1.amazonaws.com/mynavi-sample-ecs-backend:latest"
       "ContainerPort" : 8080
-      "HostPort" : 0
       "ContainerMemory" : 1024
       "Profile" : "staging"
     Dev:
-      "DesiredCount": 0  # 作成時はイメージがないので起動しないように設定
       "Memory" : 1024
       "Cpu" : 512
       "ContainerName" : "ecsdemo-backend-service"
       "ContainerImage" : "523530166249.dkr.ecr.ap-northeast-1.amazonaws.com/mynavi-sample-ecs-backend:latest"
       "ContainerPort" : 8080
-      "HostPort" : 0
       "ContainerMemory" : 1024
       "Profile" : "dev"
 
@@ -89,8 +77,8 @@ Resources:
       RequiresCompatibilities:
         - FARGATE
       Memory: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvironmentType, Memory]
-      Cpu: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvironmentType, Cpu]      
-      NetworkMode: awsvpc
+      Cpu: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvironmentType, Cpu]
+      NetworkMode: awsvpc      
       ExecutionRoleArn:
         Fn::ImportValue: !Sub ${StackPrefix}-ECSTaskExecutionRole-Arn
       TaskRoleArn:
@@ -100,7 +88,6 @@ Resources:
           Image: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvironmentType, ContainerImage]
           PortMappings:
             - ContainerPort: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvironmentType, ContainerPort]
-              HostPort: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvironmentType, HostPort]
           Environment:
             - Name: ENV_TYPE
               Value: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvironmentType, Profile]
@@ -112,10 +99,10 @@ Resources:
     Properties:
       Family: !Sub ${StackPrefix}-ecstask-backend-app
       RequiresCompatibilities:
-        - FARGATE
+        - FARGATE        
       Memory: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvironmentType, Memory]
       Cpu: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvironmentType, Cpu]      
-      NetworkMode: awsvpc
+      NetworkMode: awsvpc      
       ExecutionRoleArn:
         Fn::ImportValue: !Sub ${StackPrefix}-ECSTaskExecutionRole-Arn
       TaskRoleArn:
@@ -124,8 +111,7 @@ Resources:
         - Name: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvironmentType, ContainerName]
           Image: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvironmentType, ContainerImage]
           PortMappings:
-            - ContainerPort: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvironmentType, ContainerPort]
-              HostPort: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvironmentType, HostPort]
+            - ContainerPort: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvironmentType, ContainerPort]              
           Environment:
             - Name: ENV_TYPE
               Value: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvironmentType, Profile]

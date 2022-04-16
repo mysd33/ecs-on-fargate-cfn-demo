@@ -74,8 +74,8 @@ Resources:
       SecurityGroupIngress:        
         - SourceSecurityGroupId: !Ref PublicALBSecurityGroup
           IpProtocol: tcp
-          FromPort: 32768
-          ToPort: 61000
+          FromPort: 8080
+          ToPort: 8080
           Description: Ingress from the public ALB for dynamic port mapping
       Tags:
         - Key: Name
@@ -91,8 +91,8 @@ Resources:
       SecurityGroupIngress:        
         - SourceSecurityGroupId: !Ref PrivateALBSecurityGroup
           IpProtocol: tcp
-          FromPort: 32768
-          ToPort: 61000
+          FromPort: 8080
+          ToPort: 8080
           Description: Ingress from the private ALB for dynamic port mapping
       Tags:
         - Key: Name
