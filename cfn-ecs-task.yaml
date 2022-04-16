@@ -69,6 +69,17 @@ Mappings:
 #Conditions: 
 
 Resources:
+  #Log Group
+  FrontEndAppECSLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub "/ecs/logs/${StackPrefix}-bff-ecs-group"
+
+  BackendAppECSLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub "/ecs/logs/${StackPrefix}-backend-ecs-group"
+
   #ECS Task Definition for Frontend Application
   FrontendAppECSTaskDefinition:
     Type: AWS::ECS::TaskDefinition
@@ -93,6 +104,12 @@ Resources:
               Value: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvironmentType, Profile]
             #TODO bff apのservice.dnsプロパティの設定追加
           Memory: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvironmentType, ContainerMemory]
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref FrontEndAppECSLogGroup
+              awslogs-region: !Ref "AWS::Region"
+              awslogs-stream-prefix: !Ref StackPrefix
   #ECS Task Definition for Backend Application
   BackendServiceECSTaskDefinition:
     Type: AWS::ECS::TaskDefinition
@@ -116,6 +133,12 @@ Resources:
             - Name: ENV_TYPE
               Value: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvironmentType, Profile]
           Memory: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvironmentType, ContainerMemory]          
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref BackendAppECSLogGroup
+              awslogs-region: !Ref "AWS::Region"
+              awslogs-stream-prefix: !Ref StackPrefix
 Outputs:
   FrontendAppECSTaskDefinition:
     Description: Frontend ECS Task Definition

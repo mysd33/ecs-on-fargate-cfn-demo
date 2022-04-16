@@ -83,8 +83,6 @@ aws cloudformation create-stack --stack-name ECS-SERVICE-Stack --template-body f
 * VPCのパブリックサブネット上にEC2を起動し
 　「curl 「http://(Private ALBのDNS名)/backend/api/v1/users」を入力するとバックエンドサービスAPのJSON返却
 
-## TODO: BFFのPublicのロードバランサで502/504エラー
-
 # CD環境
 ## 1. CodePipelineの作成
 ```sh
@@ -101,7 +99,7 @@ aws cloudformation create-stack --stack-name Backend-CodePipeline-Stack --templa
   * プッシュすると、CodePipelineのパイプラインが起動し最新のDockerイメージでECRへデプロイしてくれます
   * その後、APが正しく動きます。
 
-## TODO: BFFのAPのデプロイが終わらない  
+## TODO: APのデプロイが終わらない  
 
 
 # CloudFormationコマンド文法メモ
