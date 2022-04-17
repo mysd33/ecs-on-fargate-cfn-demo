@@ -68,6 +68,10 @@ Resources:
           Effect: Allow
           Resource: "*"            
         - Action:
+          - ecs:DescribeTaskDefinition
+          Effect: Allow
+          Resource: "*"                  
+        - Action:
           - s3:PutObject
           - s3:GetObject
           - s3:GetObjectVersion
