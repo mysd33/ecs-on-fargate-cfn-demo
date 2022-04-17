@@ -17,7 +17,24 @@ Parameters:
 
 #Conditions: 
 
-Resources: 
+Resources:
+  #Security Group of Bation EC2
+  BastionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Access to the bastion
+      VpcId:
+        Fn::ImportValue: !Sub ${StackPrefix}-VPC-ID
+      SecurityGroupIngress:
+        # Allow access to Bastion SSH from anywhere on the internet
+        - CidrIp: !Ref TerminalCidrIP
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          Description: Ingress from the terminal machine
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-Bastion-SG 
   #Security Group of Public ALB for BFF
   PublicALBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -100,6 +117,11 @@ Resources:
 
 
 Outputs:
+  BastionSecurityGroupID:
+    Description: BastionSecurityGroup ID
+    Value:  !Ref BastionSecurityGroup
+    Export: 
+      Name: !Sub ${StackPrefix}-BastionSecurityGroup-ID
   PublicALBSecurityGroupID:
     Description: PublicALBSecurityGroup ID
     Value:  !Ref PublicALBSecurityGroup

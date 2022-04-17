@@ -67,8 +67,10 @@ Resources:
           SecurityGroups:
             - Fn::ImportValue: !Sub ${StackPrefix}-PublicECSSecurityGroup-ID
           Subnets:
-            - Fn::ImportValue: !Sub ${StackPrefix}-PublicSubnetOneId
-            - Fn::ImportValue: !Sub ${StackPrefix}-PublicSubnetTwoId
+#            - Fn::ImportValue: !Sub ${StackPrefix}-PublicSubnetOneId
+#            - Fn::ImportValue: !Sub ${StackPrefix}-PublicSubnetTwoId
+            - Fn::ImportValue: !Sub ${StackPrefix}-PrivateSubnetOneId
+            - Fn::ImportValue: !Sub ${StackPrefix}-PrivateSubnetTwoId 
   BackendService:
     Type: AWS::ECS::Service
     Properties:
