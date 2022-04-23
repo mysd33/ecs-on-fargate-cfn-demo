@@ -34,6 +34,16 @@ Outputs:
   BffECRRepositoryArn:
     Description: Repository Arn
     Value: !GetAtt BffECRRepository.Arn
+  BffECRRepositoryUri:
+    Description: Repository URI
+    Value: !GetAtt BffECRRepository.RepositoryUri
+    Export:
+      Name: !Sub ${StackPrefix}-BffECRRepositoryUri
   BackendECRRepositoryArn:
     Description: Repository Arn
-    Value: !GetAtt BackendECRRepository.Arn
+    Value: !GetAtt BackendECRRepository.Arn    
+  BackendECRRepositoryUri:
+    Description: Repository URI
+    Value: !GetAtt BackendECRRepository.RepositoryUri
+    Export:
+      Name: !Sub ${StackPrefix}-BackendECRRepositoryUri
