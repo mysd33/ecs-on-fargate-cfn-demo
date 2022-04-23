@@ -1,7 +1,11 @@
 # SpringBoot APをECS/Fargateで動作させCode系でCI/CDするCloudFormationサンプルテンプレート
 ## 構成
-* システム構成図.pptxを参照
-  * CDは標準のローリングアップデートとBlueGreenデプロイメントの両方に対応しています
+* CDは標準のローリングアップデートとBlueGreenデプロイメントの両方に対応しています
+  * システム構成図　ローリングアップデート版
+![システム構成図ローリングアップデート版](img/ecs-rolling-update.png)
+  * システム構成図　BlueGreenデプロメント版
+![システム構成図BlueGreenデプロイメント版](img/ecs-bluegreen-deployment.png)
+
 ## CI環境
 * 別途、以下の2つのSpringBootAPのプロジェクトがCodeComitにある前提
   * backend-for-frontend
