@@ -7,7 +7,7 @@
 ![システム構成図BlueGreenデプロイメント版](img/ecs-bluegreen-deployment.png)
 
 ## CI環境
-* 別途、以下の2つのSpringBootAPのプロジェクトがCodeComitにある前提
+* 別途、以下の2つのSpringBootAPのプロジェクトが以下のリポジトリ名でCodeCommitにある前提
   * backend-for-frontend
     * BFFのAP
   * backend
