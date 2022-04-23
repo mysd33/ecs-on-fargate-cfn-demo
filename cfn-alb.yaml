@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: ALB Template for CloudFormation Demo. Depends on cfn-vpc.yaml, cfn-sg.yaml
+Description: CodeDeploy Template for CloudFormation Demo.CodePipeline Template for CloudFormation Demo. Depends on cfn-alb.yaml, cfn-tg-bg.yaml, cfn-ecs-cluster.yaml, cfn-ecs-service.yaml.
 #Metadata: 
 
 Parameters: 
@@ -64,7 +64,7 @@ Resources:
   PublicALBDefaultTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Name: !Sub ${StackPrefix}-PublicALB-DfTargetGroup
+      Name: !Sub ${StackPrefix}-PubDfTg
       TargetType: ip
       VpcId: 
         Fn::ImportValue: !Sub ${StackPrefix}-VPC-ID
@@ -102,7 +102,7 @@ Resources:
   PrivateALBDefaultTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Name: !Sub ${StackPrefix}-PrivateALB-DfTargetGroup
+      Name: !Sub ${StackPrefix}-PrivDfTg
       TargetType: ip
       VpcId: 
         Fn::ImportValue: !Sub ${StackPrefix}-VPC-ID
@@ -138,10 +138,16 @@ Outputs:
       Name: !Sub ${StackPrefix}-PubALB-DNS
 
   PublicALBDefaultTargetGroup:
-    Description: Public ALB TagetGroup Default
+    Description: Public ALB Default TargetGroup 
     Value: !Ref PublicALBDefaultTargetGroup
     Export:
       Name: !Sub ${StackPrefix}-PubALB-DefaultTargetGroup
+
+  PublicALBDefaultTargetGroupName:
+    Description: Public ALB  Default TargetGroup Name
+    Value: !GetAtt PublicALBDefaultTargetGroup.TargetGroupName
+    Export:
+      Name: !Sub ${StackPrefix}-PubALB-DefaultTargetGroupName
 
   PublicALBListener:
     Description: Public ALB Listener ARN
@@ -162,10 +168,16 @@ Outputs:
       Name: !Sub ${StackPrefix}-PrivALB-DNS
 
   PrivateALBDefaultTargetGroup:
-    Description: Private ALB TagetGroup Default
+    Description: Private ALB Default TargetGroup
     Value: !Ref PrivateALBDefaultTargetGroup
     Export:
       Name: !Sub ${StackPrefix}-PrivALB-DefaultTargetGroup
+
+  PrivateALBDefaultTargetGroupName:
+    Description: Private ALB Default TargetGroup Name
+    Value: !GetAtt PrivateALBDefaultTargetGroup.TargetGroupName
+    Export:
+      Name: !Sub ${StackPrefix}-PrivALB-DefaultTargetGroupName
 
   PrivateALBListener:
     Description: Private ALB Listener ARN

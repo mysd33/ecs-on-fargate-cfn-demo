@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: ECS Service Template for CloudFormation Demo. Depends on cfn-ecs-tg.yaml, cfn-ecs-cluster.yaml, cfn-ecs-task.yaml
+Description: ECS Service Template for CloudFormation Demo. Depends on cfn-vpc.yaml, cfn-sg.yaml, cfn-alb.yaml, cfn-ecs-cluster.yaml, cfn-ecs-task.yaml
 #Metadata: 
 
 Parameters: 
@@ -12,13 +12,18 @@ Parameters:
     Type: String
     AllowedValues: ["Dev", "Staging", "Production"]
     Default: Production
+  DeployType:
+    Description: ECS Deployment Controller Type
+    Type: String
+    AllowedValues: ["ECS", "CODE_DEPLOY", "EXTERNAL"]
+    Default: ECS
 
 Mappings:
   BackendServiceMap:
     Production:
       "DesiredCount": 1
       "ContainerName": "ecsdemo-backend-service"
-      "ContainerPort": 8080
+      "ContainerPort": 8080      
     Staging:
       "DesiredCount": 1
       "ContainerName": "ecsdemo-backend-service"
@@ -71,6 +76,8 @@ Resources:
 #            - Fn::ImportValue: !Sub ${StackPrefix}-PublicSubnetTwoId
             - Fn::ImportValue: !Sub ${StackPrefix}-PrivateSubnetOneId
             - Fn::ImportValue: !Sub ${StackPrefix}-PrivateSubnetTwoId 
+      DeploymentController:
+        Type: !Ref DeployType
   BackendService:
     Type: AWS::ECS::Service
     Properties:
@@ -95,7 +102,9 @@ Resources:
             - Fn::ImportValue: !Sub ${StackPrefix}-PrivateECSSecurityGroup-ID
           Subnets:
             - Fn::ImportValue: !Sub ${StackPrefix}-PrivateSubnetOneId
-            - Fn::ImportValue: !Sub ${StackPrefix}-PrivateSubnetTwoId           
+            - Fn::ImportValue: !Sub ${StackPrefix}-PrivateSubnetTwoId
+      DeploymentController:
+        Type: !Ref DeployType            
 Outputs:
   FrontendWebAppService:
     Description: Frontend ECS Service

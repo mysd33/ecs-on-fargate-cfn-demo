@@ -1,6 +1,7 @@
-# SpringBoot APをECS/Fargateで動作させCodePipeline/CodeBuildでローリングアップデートするCloudFormationサンプルテンプレート
+# SpringBoot APをECS/Fargateで動作させCode系でCI/CDするCloudFormationサンプルテンプレート
 ## 構成
 * システム構成図.pptxを参照
+  * CDは標準のローリングアップデートとBlueGreenデプロイメントの両方に対応しています
 ## CI環境
 * 別途、以下の2つのSpringBootAPのプロジェクトがCodeComitにある前提
   * backend-for-frontend
@@ -56,8 +57,13 @@ aws cloudformation create-stack --stack-name ECS-IAM-Stack --template-body file:
 aws cloudformation validate-template --template-body file://cfn-alb.yaml
 aws cloudformation create-stack --stack-name ECS-ALB-Stack --template-body file://cfn-alb.yaml
 ```
-* TODO: 手順削除検討
-* ~~ECS上のアプリ用のTarget Group, Listener~~  
+* BlueGreenデプロイメントの場合のみ以下実行し、2つ目（Green環境）用のTarget Groupを作成
+```sh
+aws cloudformation validate-template --template-body file://cfn-tg-bg.yaml
+aws cloudformation create-stack --stack-name ECS-TG-BG-Stack --template-body file://cfn-tg-bg.yaml
+```
+
+* ~~手順削除：ListenerRuleを使ったTargetGroupの設定~~
 ~~aws cloudformation validate-template --template-body file://cfn-tg.yaml~~
 ~~aws cloudformation create-stack --stack-name ECS-TG-Stack --template-body file://cfn-tg.yaml~~
 
@@ -78,15 +84,21 @@ aws cloudformation create-stack --stack-name ECS-TASK-Stack --template-body file
   * TBD: RDS,DynamoDBへのアクセスの必要に応じて
     * cfn-iamの.yamlの修正が必要
 
-### 8. ECSサービスの実行
+### 8-1. ECSサービスの実行（ローリングアップデートの場合）
+* ローリングアップデートの場合は以下を実行
 ```sh
 aws cloudformation validate-template --template-body file://cfn-ecs-service.yaml
 aws cloudformation create-stack --stack-name ECS-SERVICE-Stack --template-body file://cfn-ecs-service.yaml
 ```
-* TODO: BFFのECSもPrivate Subnet側に作成したほうがいいかも
+### 8-2. ECSサービスの実行（BlueGreenデプロイメントの場合）
+* BlueGreenデプロイメントの場合は以下のパラメータを指定して起動
+```sh
+aws cloudformation validate-template --template-body file://cfn-ecs-service.yaml
+aws cloudformation create-stack --stack-name ECS-SERVICE-Stack --template-body file://cfn-ecs-service.yaml --parameters ParameterKey=DeployType,ParameterValue=CODE_DEPLOY
+```
 
 ### 9. APの実行確認
-* Backendアプリケーションの確認  
+ Backendアプリケーションの確認  
   * VPCのパブリックサブネット上にBationのEC2を起動
 ```sh
 aws cloudformation validate-template --template-body file://cfn-bastion-ec2.yaml
@@ -100,8 +112,9 @@ aws cloudformation create-stack --stack-name Demo-Bastion-Stack --template-body 
 * うまく動作しない場合、Cloud Watch Logの以下のロググループのAPログにエラーが出ていないか確認するとよい
   * /ecs/logs/Demo-backend-ecs-group
   * /ecs/logs/Demo-bff-ecs-group
-## CD環境
-### 1. CodePipelineの作成
+## CD環境（標準のローリングアップデートの場合）
+* ローリングアップデートの場合は、以下のコマンドを実行
+### 1. ローリングアップデート対応のCodePipelineの作成
 ```sh
 aws cloudformation validate-template --template-body file://cfn-bff-codepipeline.yaml
 aws cloudformation create-stack --stack-name Bff-CodePipeline-Stack --template-body file://cfn-bff-codepipeline.yaml --capabilities CAPABILITY_IAM
@@ -116,6 +129,32 @@ aws cloudformation create-stack --stack-name Backend-CodePipeline-Stack --templa
 ### 3. ソースコードの変更
   * 何らかのソースコードの変更を加えて、CodeCommitにプッシュする
   * CodePipelineのパイプラインが実行され、新しいAPがデプロイされることを確認する
+
+## CD環境（標準のBlueGreenデプロイメントの場合）
+* BlueGreenデプロイメントの場合は、以下のコマンドを実行
+### 1. CodeDeployの作成
+```sh
+aws cloudformation validate-template --template-body file://cfn-bff-codedeploy.yaml
+aws cloudformation create-stack --stack-name Bff-CodeDeploy-Stack --template-body file://cfn-bff-codedeploy.yaml --capabilities CAPABILITY_IAM
+
+aws cloudformation validate-template --template-body file://cfn-backend-codedeploy.yaml
+aws cloudformation create-stack --stack-name Backend-CodeDeploy-Stack --template-body file://cfn-backend-codedeploy.yaml --capabilities CAPABILITY_IAM
+```
+  
+### 2. BlueGreenデプロイメント対応のCodePipelineの作成
+```sh
+aws cloudformation validate-template --template-body file://cfn-bff-codepipeline-bg.yaml
+aws cloudformation create-stack --stack-name Bff-CodePipeline-BG-Stack --template-body file://cfn-bff-codepipeline-bg.yaml --capabilities CAPABILITY_IAM
+
+aws cloudformation validate-template --template-body file://cfn-backend-codepipeline-bg.yaml
+aws cloudformation create-stack --stack-name Backend-CodePipeline-BG-Stack --template-body file://cfn-backend-codepipeline-bg.yaml --capabilities CAPABILITY_IAM
+```
+### 3. CodePipelineの確認
+  * CodePipelineの作成後、パイプラインが自動実行されるので、デプロイ成功することを確認する
+### 4. ソースコードの変更
+  * 何らかのソースコードの変更を加えて、CodeCommitにプッシュする
+  * CodePipelineのパイプラインが実行され、新しいAPがデプロイされることを確認する
+
 
 ## CloudFormationコマンド文法メモ
 * スタックの新規作成

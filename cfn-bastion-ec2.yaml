@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: EC2 bastion Template for CloudFormation Demo
+Description: EC2 bastion Template for CloudFormation Demo. Depends on cfn-vpc.yaml, cfn-sg.yaml
 #Metadata: 
 
 Parameters: 
