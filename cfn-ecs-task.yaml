@@ -74,11 +74,17 @@ Resources:
     Type: "AWS::Logs::LogGroup"
     Properties:
       LogGroupName: !Sub "/ecs/logs/${StackPrefix}-bff-ecs-group"
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-FrontEndAppECSLogGroup
 
   BackendAppECSLogGroup:
     Type: "AWS::Logs::LogGroup"
     Properties:
       LogGroupName: !Sub "/ecs/logs/${StackPrefix}-backend-ecs-group"
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-BackendAppECSLogGroup
 
   #ECS Task Definition for Frontend Application
   FrontendAppECSTaskDefinition:
@@ -119,6 +125,9 @@ Resources:
               awslogs-group: !Ref FrontEndAppECSLogGroup
               awslogs-region: !Ref "AWS::Region"
               awslogs-stream-prefix: !Ref StackPrefix
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-FrontendAppECSTaskDefinition
   #ECS Task Definition for Backend Application
   BackendServiceECSTaskDefinition:
     Type: AWS::ECS::TaskDefinition
@@ -152,6 +161,9 @@ Resources:
               awslogs-group: !Ref BackendAppECSLogGroup
               awslogs-region: !Ref "AWS::Region"
               awslogs-stream-prefix: !Ref StackPrefix
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-BackendServiceECSTaskDefinition
 Outputs:
   FrontendAppECSTaskDefinition:
     Description: Frontend ECS Task Definition

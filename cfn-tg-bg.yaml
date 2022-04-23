@@ -60,6 +60,9 @@ Resources:
       #TargetGroupAttributes: 
       #  - Key: deregistration_delay.timeout_seconds
       #    Value: '60'
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-PubTg2
 
   PrivateALBTargetGroup2:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -76,7 +79,10 @@ Resources:
       #HealthyThresholdCount: 5
       #TargetGroupAttributes: 
       #  - Key: deregistration_delay.timeout_seconds
-      #    Value: '60'      
+      #    Value: '60' 
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-PrivTg2     
 
 #TODO: Test Listner
 

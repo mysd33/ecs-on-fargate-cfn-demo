@@ -52,6 +52,9 @@ Resources:
                     - !Ref 'AWS::AccountId'
                     - ':'
                     - !Ref BackendCodePipeline
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-BackendCloudWatchEventRole
   #Cloud Watch Event Rule                
   CloudWatchEventRule:
     Type: 'AWS::Events::Rule'
@@ -155,6 +158,9 @@ Resources:
                 - Name: SourceArtifact              
                 - Name: BuildArtifact
               RunOrder: 1
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-BackendCodePipeline
   CodePipelineServiceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -197,4 +203,7 @@ Resources:
                   - 's3:*'
                   - 'ecs:*'
                 Resource: '*'                        
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-BackendCodePipelineServiceRole
 #Outputs:

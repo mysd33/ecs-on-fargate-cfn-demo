@@ -24,6 +24,9 @@ Resources:
             Effect: Allow
             Principal:
               Service: ecs-tasks.amazonaws.com
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-FrontendECSTaskRole
 
   #IAM Role for Backend ECS Task
   BackendECSTaskRole:
@@ -36,6 +39,9 @@ Resources:
             Effect: Allow
             Principal:
               Service: ecs-tasks.amazonaws.com
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-BackendECSTaskRole
 
   #IAM Role for ECS Task Execution  
   ECSTaskExecutionRole:
@@ -52,7 +58,9 @@ Resources:
         - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
         - arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess
         - arn:aws:iam::aws:policy/SecretsManagerReadWrite
-
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-ECSTaskExecutionRole
 
 Outputs:
   FrontendECSTaskRoleArn:

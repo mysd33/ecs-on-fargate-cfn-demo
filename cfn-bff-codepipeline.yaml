@@ -51,7 +51,10 @@ Resources:
                     - ':'
                     - !Ref 'AWS::AccountId'
                     - ':'
-                    - !Ref BackendCodePipeline
+                    - !Ref BffCodePipeline
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-BffCloudWatchEventRole                  
   #Cloud Watch Event Rule                
   CloudWatchEventRule:
     Type: 'AWS::Events::Rule'
@@ -86,11 +89,11 @@ Resources:
               - ':'
               - !Ref 'AWS::AccountId'
               - ':'
-              - !Ref BackendCodePipeline
+              - !Ref BffCodePipeline
           RoleArn: !GetAtt CloudWatchEventRole.Arn
           Id: codepipeline-BffCodePipeline
 
-  BackendCodePipeline:
+  BffCodePipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
       Name: demo-bff-pipeline
@@ -148,7 +151,9 @@ Resources:
               InputArtifacts:
                 - Name: BuildArtifact
               RunOrder: 1 
-
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-BffCodePipeline
   CodePipelineServiceRole:
     Type: AWS::IAM::Role
     Properties:

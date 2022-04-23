@@ -59,7 +59,10 @@ Resources:
         - Fn::ImportValue: !Sub ${StackPrefix}-PublicSubnetOneId
         - Fn::ImportValue: !Sub ${StackPrefix}-PublicSubnetTwoId
       SecurityGroups: 
-        - Fn::ImportValue: !Sub ${StackPrefix}-PublicALBSecurityGroup-ID      
+        - Fn::ImportValue: !Sub ${StackPrefix}-PublicALBSecurityGroup-ID
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-PublicALB
 
   PublicALBDefaultTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -77,6 +80,9 @@ Resources:
       #TargetGroupAttributes: 
       #  - Key: deregistration_delay.timeout_seconds
       #    Value: '60'
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-PubDfTg
   PublicALBListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties: 
@@ -85,7 +91,7 @@ Resources:
       Protocol: !FindInMap [DeployEnvironmentMap, !Ref EnvironmentType, Protocol]      
       DefaultActions: 
         - Type: forward
-          TargetGroupArn: !Ref PublicALBDefaultTargetGroup
+          TargetGroupArn: !Ref PublicALBDefaultTargetGroup                
 
   #Privte ALB for Backend     
   PrivateALB:
@@ -98,6 +104,9 @@ Resources:
         - Fn::ImportValue: !Sub ${StackPrefix}-PrivateSubnetTwoId
       SecurityGroups: 
         - Fn::ImportValue: !Sub ${StackPrefix}-PrivateALBSecurityGroup-ID      
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-PrivateALB
 
   PrivateALBDefaultTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -115,6 +124,9 @@ Resources:
       #TargetGroupAttributes: 
       #  - Key: deregistration_delay.timeout_seconds
       #    Value: '60'
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-PrivDfTg
   PrivateALBListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties: 

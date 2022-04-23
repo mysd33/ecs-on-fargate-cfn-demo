@@ -78,6 +78,13 @@ Resources:
             - Fn::ImportValue: !Sub ${StackPrefix}-PrivateSubnetTwoId 
       DeploymentController:
         Type: !Ref DeployType
+#TODO: DeploymentConfiguration for Rolling Update
+#      DeploymentConfiguration:
+#        MaximumPercent: 0
+#        MinimumHealthyPercent: 0             
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-FrontendWebAppService
   BackendService:
     Type: AWS::ECS::Service
     Properties:
@@ -104,7 +111,10 @@ Resources:
             - Fn::ImportValue: !Sub ${StackPrefix}-PrivateSubnetOneId
             - Fn::ImportValue: !Sub ${StackPrefix}-PrivateSubnetTwoId
       DeploymentController:
-        Type: !Ref DeployType            
+        Type: !Ref DeployType
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-BackendService
 Outputs:
   FrontendWebAppService:
     Description: Frontend ECS Service

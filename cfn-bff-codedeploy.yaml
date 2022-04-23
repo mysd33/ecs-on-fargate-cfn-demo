@@ -17,7 +17,10 @@ Resources:
   FrontendCodeDeployApplication: 
     Type: AWS::CodeDeploy::Application 
     Properties:
-      ComputePlatform: ECS 
+      ComputePlatform: ECS
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-FrontendCodeDeployApplication
 
 #IAM Role for CodeDeploy Service Role
   CodeDeployServiceRole:
@@ -32,6 +35,9 @@ Resources:
               Service: codedeploy.amazonaws.com
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AWSCodeDeployRoleForECS
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-BffCodeDeployServiceRole
 
 #Code Deploy Deployment Group
   FrontendCodeDeployDeploymentGroup:
@@ -66,6 +72,9 @@ Resources:
               - Name:
                   Fn::ImportValue: !Sub ${StackPrefix}-PubALB-TargetGroup2Name
       ServiceRoleArn: !GetAtt CodeDeployServiceRole.Arn
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-FrontendCodeDeployDeploymentGroup        
 Outputs:
   FrontendCodeDeployApplicationName: 
     Description: CodeDeploy Application Name
