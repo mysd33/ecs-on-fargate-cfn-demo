@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: CodeDeploy Template for CloudFormation Demo.CodePipeline Template for CloudFormation Demo. Depends on cfn-alb.yaml, cfn-tg-bg.yaml, cfn-ecs-cluster.yaml, cfn-ecs-service.yaml.
+Description: ALB Template for CloudFormation Demo. Depends on cfn-vpc.yaml, cfn-sg.yaml
 #Metadata: 
 
 Parameters: 
