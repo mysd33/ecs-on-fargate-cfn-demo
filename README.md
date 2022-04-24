@@ -108,6 +108,8 @@ aws cloudformation create-stack --stack-name ECS-SERVICE-Stack --template-body f
 aws cloudformation validate-template --template-body file://cfn-bastion-ec2.yaml
 aws cloudformation create-stack --stack-name Demo-Bastion-Stack --template-body file://cfn-bastion-ec2.yaml
 ```
+  * 必要に応じてキーペア名等のパラメータを指定
+    * 「--parameters ParameterKey=KeyPairName,ParameterValue=myKeyPair」
   * EC2にログインし、以下のコマンドを「curl http://(Private ALBのDNS名)/backend/api/v1/users」を入力するとバックエンドサービスAPのJSONレスポンスが返却
 
 * BFFアプリケーションの確認
