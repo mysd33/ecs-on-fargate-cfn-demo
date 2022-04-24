@@ -68,7 +68,8 @@ Resources:
             Fn::ImportValue: !Sub ${StackPrefix}-PubALB-DefaultTargetGroup
       NetworkConfiguration:
         AwsvpcConfiguration:
-          AssignPublicIp: ENABLED
+#          AssignPublicIp: ENABLED
+          AssignPublicIp: DISABLED          
           SecurityGroups:
             - Fn::ImportValue: !Sub ${StackPrefix}-PublicECSSecurityGroup-ID
           Subnets:

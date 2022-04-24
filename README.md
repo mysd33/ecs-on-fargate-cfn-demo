@@ -102,7 +102,7 @@ aws cloudformation create-stack --stack-name ECS-SERVICE-Stack --template-body f
 ```
 
 ### 9. APの実行確認
- Backendアプリケーションの確認  
+* Backendアプリケーションの確認  
   * VPCのパブリックサブネット上にBationのEC2を起動
 ```sh
 aws cloudformation validate-template --template-body file://cfn-bastion-ec2.yaml
