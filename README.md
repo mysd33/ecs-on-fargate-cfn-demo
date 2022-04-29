@@ -5,7 +5,6 @@
 ![システム構成図ローリングアップデート版](img/ecs-rolling-update.png)
   * システム構成図　BlueGreenデプロメント版
 ![システム構成図BlueGreenデプロイメント版](img/ecs-bluegreen-deployment.png)
-  * TODO: NAT GatewayのECRからのデータ転送量を節約するようECRのVPC Endpoint対応したい
 
 * ログの転送は現状、awslogsドライバを使ったCloudWatch Logsへの転送に対応しています
   * TODO: いずれFireLensに対応したサンプルも追加したいです
@@ -45,7 +44,6 @@ aws cloudformation create-stack --stack-name Backend-CodeBuild-Stack --template-
 aws cloudformation validate-template --template-body file://cfn-vpc.yaml
 aws cloudformation create-stack --stack-name ECS-VPC-Stack --template-body file://cfn-vpc.yaml
 ```
-* TODO: ECRのVPCエンドポイント作成
 
 ### 2. NAT Gatewayの作成とプライベートサブネットのルートテーブル更新
 ```sh
@@ -61,13 +59,19 @@ aws cloudformation create-stack --stack-name ECS-SG-Stack --template-body file:/
 * 必要に応じて、端末の接続元IPアドレス等のパラメータを指定
     * 「--parameters ParameterKey=TerminalCidrIP,ParameterValue=X.X.X.X/X」
 
-### 4. IAMの作成
+### 4. VPC Endpointの作成
+```sh
+aws cloudformation validate-template --template-body file://cfn-vpe.yaml
+aws cloudformation create-stack --stack-name ECS-VPE-Stack --template-body file://cfn-vpe.yaml
+```
+
+### 5. IAMの作成
 ```sh
 aws cloudformation validate-template --template-body file://cfn-iam.yaml
 aws cloudformation create-stack --stack-name ECS-IAM-Stack --template-body file://cfn-iam.yaml --capabilities CAPABILITY_IAM
 ```
 
-### 5. ALBの作成
+### 6. ALBの作成
 * ALB
 ```sh
 aws cloudformation validate-template --template-body file://cfn-alb.yaml
@@ -83,13 +87,13 @@ aws cloudformation create-stack --stack-name ECS-TG-BG-Stack --template-body fil
 ~~aws cloudformation validate-template --template-body file://cfn-tg.yaml~~
 ~~aws cloudformation create-stack --stack-name ECS-TG-Stack --template-body file://cfn-tg.yaml~~
 
-### 6. ECSクラスタの作成
+### 7. ECSクラスタの作成
 ```sh
 aws cloudformation validate-template --template-body file://cfn-ecs-cluster.yaml
 aws cloudformation create-stack --stack-name ECS-CLUSTER-Stack --template-body file://cfn-ecs-cluster.yaml
 ```
 
-### 7. ECSタスク定義の作成
+### 8. ECSタスク定義の作成
 * タスク定義
 ```sh
 aws cloudformation validate-template --template-body file://cfn-ecs-task.yaml
@@ -100,20 +104,20 @@ aws cloudformation create-stack --stack-name ECS-TASK-Stack --template-body file
   * TBD: RDS,DynamoDBへのアクセスの必要に応じて
     * cfn-iamの.yamlの修正が必要
 
-### 8-1. ECSサービスの実行（ローリングアップデートの場合）
+### 9-1. ECSサービスの実行（ローリングアップデートの場合）
 * ローリングアップデートの場合は以下を実行
 ```sh
 aws cloudformation validate-template --template-body file://cfn-ecs-service.yaml
 aws cloudformation create-stack --stack-name ECS-SERVICE-Stack --template-body file://cfn-ecs-service.yaml
 ```
-### 8-2. ECSサービスの実行（BlueGreenデプロイメントの場合）
+### 9-2. ECSサービスの実行（BlueGreenデプロイメントの場合）
 * BlueGreenデプロイメントの場合は以下のパラメータを指定して起動
 ```sh
 aws cloudformation validate-template --template-body file://cfn-ecs-service.yaml
 aws cloudformation create-stack --stack-name ECS-SERVICE-Stack --template-body file://cfn-ecs-service.yaml --parameters ParameterKey=DeployType,ParameterValue=CODE_DEPLOY
 ```
 
-### 9. APの実行確認
+### 10. APの実行確認
 * Backendアプリケーションの確認  
   * VPCのパブリックサブネット上にBationのEC2を起動
 ```sh
@@ -122,7 +126,8 @@ aws cloudformation create-stack --stack-name Demo-Bastion-Stack --template-body 
 ```
   * 必要に応じてキーペア名等のパラメータを指定
     * 「--parameters ParameterKey=KeyPairName,ParameterValue=myKeyPair」
-  * EC2にログインし、以下のコマンドを「curl http://(Private ALBのDNS名)/backend/api/v1/users」を入力するとバックエンドサービスAPのJSONレスポンスが返却
+  * BastionのEC2のアドレスは、CloudFormationの「ECS-Bastion-Stack」スタックの出力「BastionDNSName」のURLを参照
+  * EC2にSSHでログインし、以下のコマンドを「curl http://(Private ALBのDNS名)/backend/api/v1/users」を入力するとバックエンドサービスAPのJSONレスポンスが返却
     * CloudFormationの「ECS-SERVICE-Stack」スタックの出力「BackendServiceURI」のURLを参照
 
 * BFFアプリケーションの確認
