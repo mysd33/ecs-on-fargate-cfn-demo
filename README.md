@@ -5,6 +5,7 @@
 ![システム構成図ローリングアップデート版](img/ecs-rolling-update.png)
   * システム構成図　BlueGreenデプロメント版
 ![システム構成図BlueGreenデプロイメント版](img/ecs-bluegreen-deployment.png)
+  * TODO: NAT GatewayのECRからのデータ転送量を節約するようECRのVPC Endpoint対応したい
 
 * ログの転送は現状、awslogsドライバを使ったCloudWatch Logsへの転送に対応しています
   * TODO: いずれFireLensに対応したサンプルも追加したいです
@@ -44,6 +45,8 @@ aws cloudformation create-stack --stack-name Backend-CodeBuild-Stack --template-
 aws cloudformation validate-template --template-body file://cfn-vpc.yaml
 aws cloudformation create-stack --stack-name ECS-VPC-Stack --template-body file://cfn-vpc.yaml
 ```
+* TODO: ECRのVPCエンドポイント作成
+
 ### 2. NAT Gatewayの作成とプライベートサブネットのルートテーブル更新
 ```sh
 aws cloudformation validate-template --template-body file://cfn-ngw.yaml
@@ -120,9 +123,11 @@ aws cloudformation create-stack --stack-name Demo-Bastion-Stack --template-body 
   * 必要に応じてキーペア名等のパラメータを指定
     * 「--parameters ParameterKey=KeyPairName,ParameterValue=myKeyPair」
   * EC2にログインし、以下のコマンドを「curl http://(Private ALBのDNS名)/backend/api/v1/users」を入力するとバックエンドサービスAPのJSONレスポンスが返却
+    * CloudFormationの「ECS-SERVICE-Stack」スタックの出力「BackendServiceURI」のURLを参照
 
 * BFFアプリケーションの確認
   * ブラウザで「http://(Public ALBのDNS名)/backend-for-frontend/index.html」を入力しフロントエンドAPの画面が表示される
+    * CloudFormationの「ECS-SERVICE-Stack」スタックの出力「FrontendWebAppServiceURI」のURLを参照
 
 * うまく動作しない場合、Cloud Watch Logの以下のロググループのAPログにエラーが出ていないか確認するとよい
   * /ecs/logs/Demo-backend-ecs-group
