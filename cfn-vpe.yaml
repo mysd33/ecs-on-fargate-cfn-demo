@@ -39,49 +39,6 @@ Resources:
         - Fn::ImportValue: !Sub ${StackPrefix}-VPCEndpointSecurityGroup-ID                      
       PrivateDnsEnabled: true
 
-# VPC Endpoint for ECS (docker pull from ECS on EC2 to ECR)
-  ECSAgentVPCEndpoint:
-    Type: AWS::EC2::VPCEndpoint
-    Properties:      
-      VpcEndpointType: Interface
-      ServiceName: !Sub com.amazonaws.${AWS::Region}.ecs-agent
-      SubnetIds:
-        - Fn::ImportValue: !Sub ${StackPrefix}-PrivateSubnetOneId
-        - Fn::ImportValue: !Sub ${StackPrefix}-PrivateSubnetTwoId
-      VpcId: 
-        Fn::ImportValue: !Sub ${StackPrefix}-VPC-ID          
-      SecurityGroupIds: 
-        - Fn::ImportValue: !Sub ${StackPrefix}-VPCEndpointSecurityGroup-ID        
-      PrivateDnsEnabled: true
-
-  ECSTelemetryVPCEndpoint:
-    Type: AWS::EC2::VPCEndpoint
-    Properties:      
-      VpcEndpointType: Interface
-      ServiceName: !Sub com.amazonaws.${AWS::Region}.ecs-telemetry
-      SubnetIds:
-        - Fn::ImportValue: !Sub ${StackPrefix}-PrivateSubnetOneId
-        - Fn::ImportValue: !Sub ${StackPrefix}-PrivateSubnetTwoId
-      VpcId: 
-        Fn::ImportValue: !Sub ${StackPrefix}-VPC-ID          
-      SecurityGroupIds: 
-        - Fn::ImportValue: !Sub ${StackPrefix}-VPCEndpointSecurityGroup-ID        
-      PrivateDnsEnabled: true
-
-  ECSVPCEndpoint:
-    Type: AWS::EC2::VPCEndpoint
-    Properties:      
-      VpcEndpointType: Interface
-      ServiceName: !Sub com.amazonaws.${AWS::Region}.ecs
-      SubnetIds:
-        - Fn::ImportValue: !Sub ${StackPrefix}-PrivateSubnetOneId
-        - Fn::ImportValue: !Sub ${StackPrefix}-PrivateSubnetTwoId
-      VpcId: 
-        Fn::ImportValue: !Sub ${StackPrefix}-VPC-ID          
-      SecurityGroupIds: 
-        - Fn::ImportValue: !Sub ${StackPrefix}-VPCEndpointSecurityGroup-ID        
-      PrivateDnsEnabled: true
-
 # VPC Endpoint for ECR
   ECRApiVPCEndpoint:
     Type: AWS::EC2::VPCEndpoint
