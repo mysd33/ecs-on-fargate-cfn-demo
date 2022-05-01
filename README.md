@@ -149,7 +149,7 @@ aws cloudformation create-stack --stack-name Demo-Bastion-Stack --template-body 
 aws cloudformation validate-template --template-body file://cfn-ecs-autoscaling.yaml
 aws cloudformation create-stack --stack-name ECS-AutoScaling-Stack --template-body file://cfn-ecs-autoscaling.yaml  --capabilities CAPABILITY_IAM
 ```
-* BastionのEC2から、ApacheBench (ab) ユーティリティを使用して、ロードバランサーに短期間に数千の HTTP リクエストを送信
+* BastionのEC2から、ApacheBench (ab) ユーティリティを使用して、ロードバランサーに短期間に大量のHTTPリクエストを送信
   * abコマンドのインストール
 ```sh
 yum install httpd-tools
