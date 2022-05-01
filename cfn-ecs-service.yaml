@@ -28,33 +28,27 @@ Mappings:
       "DesiredCount": 1
       "ContainerName": "ecsdemo-backend-service"
       "ContainerPort": 8080   
-      "MinimumHealthyPercent": 0
     Staging:
       "DesiredCount": 1
       "ContainerName": "ecsdemo-backend-service"
       "ContainerPort": 8080
-      "MinimumHealthyPercent": 0
     Dev:
       "DesiredCount": 1
       "ContainerName": "ecsdemo-backend-service"
-      "ContainerPort": 8080
-      "MinimumHealthyPercent": 0
+      "ContainerPort": 8080      
   FrontendWebAppMap:
     Production:
       "DesiredCount": 1
       "ContainerName" : "ecsdemo-frontend-app"
-      "ContainerPort" : 8080
-      "MinimumHealthyPercent": 0
+      "ContainerPort" : 8080      
     Staging:
       "DesiredCount": 1
       "ContainerName" : "ecsdemo-frontend-app"
-      "ContainerPort" : 8080
-      "MinimumHealthyPercent": 0
+      "ContainerPort" : 8080      
     Dev:
       "DesiredCount": 1
       "ContainerName" : "ecsdemo-frontend-app"
-      "ContainerPort" : 8080 
-      "MinimumHealthyPercent": 0
+      "ContainerPort" : 8080       
 
 #Conditions: 
 
