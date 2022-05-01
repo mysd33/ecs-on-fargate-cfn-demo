@@ -17,34 +17,44 @@ Parameters:
     Type: String
     AllowedValues: ["ECS", "CODE_DEPLOY", "EXTERNAL"]
     Default: ECS
+  RollingUpdateMinimumHealthyPercent:    
+    Description: DeploymentConfiguration MinimumHealthyPercent for Rolling Update Quickly
+    Type: Number
+    Default: 100
 
 Mappings:
   BackendServiceMap:
     Production:
       "DesiredCount": 1
       "ContainerName": "ecsdemo-backend-service"
-      "ContainerPort": 8080      
+      "ContainerPort": 8080   
+      "MinimumHealthyPercent": 0
     Staging:
       "DesiredCount": 1
       "ContainerName": "ecsdemo-backend-service"
       "ContainerPort": 8080
+      "MinimumHealthyPercent": 0
     Dev:
       "DesiredCount": 1
       "ContainerName": "ecsdemo-backend-service"
       "ContainerPort": 8080
+      "MinimumHealthyPercent": 0
   FrontendWebAppMap:
     Production:
       "DesiredCount": 1
       "ContainerName" : "ecsdemo-frontend-app"
       "ContainerPort" : 8080
+      "MinimumHealthyPercent": 0
     Staging:
       "DesiredCount": 1
       "ContainerName" : "ecsdemo-frontend-app"
       "ContainerPort" : 8080
+      "MinimumHealthyPercent": 0
     Dev:
       "DesiredCount": 1
       "ContainerName" : "ecsdemo-frontend-app"
       "ContainerPort" : 8080 
+      "MinimumHealthyPercent": 0
 
 #Conditions: 
 
@@ -79,10 +89,11 @@ Resources:
             - Fn::ImportValue: !Sub ${StackPrefix}-PrivateSubnetTwoId 
       DeploymentController:
         Type: !Ref DeployType
-#TODO: DeploymentConfiguration for Rolling Update
-#      DeploymentConfiguration:
-#        MaximumPercent: 0
-#        MinimumHealthyPercent: 0             
+      DeploymentConfiguration:
+        DeploymentCircuitBreaker:
+          Enable: true
+          Rollback: true
+        MinimumHealthyPercent: !Ref RollingUpdateMinimumHealthyPercent
       Tags:
         - Key: Name
           Value: !Sub ${StackPrefix}-FrontendWebAppService
@@ -113,6 +124,11 @@ Resources:
             - Fn::ImportValue: !Sub ${StackPrefix}-PrivateSubnetTwoId
       DeploymentController:
         Type: !Ref DeployType
+      DeploymentConfiguration:
+        DeploymentCircuitBreaker:
+          Enable: true
+          Rollback: true
+        MinimumHealthyPercent: !Ref RollingUpdateMinimumHealthyPercent
       Tags:
         - Key: Name
           Value: !Sub ${StackPrefix}-BackendService
