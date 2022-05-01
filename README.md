@@ -1,14 +1,17 @@
 # SpringBoot APをECS/Fargateで動作させCode系でCI/CDするCloudFormationサンプルテンプレート
 ## 構成
-* CDは標準のローリングアップデートとBlueGreenデプロイメントの両方に対応しています
+* CDは標準のローリングアップデートとBlueGreenデプロイメントの両方に対応している。
   * システム構成図　ローリングアップデート版
 ![システム構成図ローリングアップデート版](img/ecs-rolling-update.png)
   * システム構成図　BlueGreenデプロメント版
 ![システム構成図BlueGreenデプロイメント版](img/ecs-bluegreen-deployment.png)
 
-* ログの転送は現状、awslogsドライバを使ったCloudWatch Logsへの転送に対応しています
+* ログの転送は現状、awslogsドライバを使ったCloudWatch Logsへの転送に対応している。
   * TODO: いずれFireLensに対応したサンプルも追加したいです
 ![ログドライバ](img/logdriver.png)
+
+* オートスケーリングは、平均CPU使用率のターゲット追跡スケーリングポリシーによる例に対応している。
+![オートスケーリング](img/autoscaling.png)
 
 ## CI環境
 * 別途、以下の2つのSpringBootAPのプロジェクトが以下のリポジトリ名でCodeCommitにある前提
