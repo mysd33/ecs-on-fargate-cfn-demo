@@ -152,7 +152,7 @@ aws cloudformation create-stack --stack-name ECS-AutoScaling-Stack --template-bo
 * BastionのEC2から、ApacheBench (ab) ユーティリティを使用して、ロードバランサーに短期間に大量のHTTPリクエストを送信
   * abコマンドのインストール
 ```sh
-yum install httpd-tools
+sudo yum install httpd-tools
 ```
   * 以下のいずれかのabコマンドを実行
 ```sh
