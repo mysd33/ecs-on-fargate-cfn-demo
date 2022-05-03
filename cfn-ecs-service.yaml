@@ -20,14 +20,14 @@ Parameters:
   RollingUpdateMinimumHealthyPercent:    
     Description: DeploymentConfiguration MinimumHealthyPercent for Rolling Update Quickly
     Type: Number
-    Default: 100
+    Default: 0    
 
 Mappings:
   BackendServiceMap:
     Production:
       "DesiredCount": 1
       "ContainerName": "ecsdemo-backend-service"
-      "ContainerPort": 8080   
+      "ContainerPort": 8080      
     Staging:
       "DesiredCount": 1
       "ContainerName": "ecsdemo-backend-service"
@@ -35,22 +35,25 @@ Mappings:
     Dev:
       "DesiredCount": 1
       "ContainerName": "ecsdemo-backend-service"
-      "ContainerPort": 8080      
+      "ContainerPort": 8080
   FrontendWebAppMap:
     Production:
       "DesiredCount": 1
       "ContainerName" : "ecsdemo-frontend-app"
-      "ContainerPort" : 8080      
+      "ContainerPort" : 8080
     Staging:
       "DesiredCount": 1
       "ContainerName" : "ecsdemo-frontend-app"
-      "ContainerPort" : 8080      
+      "ContainerPort" : 8080
     Dev:
       "DesiredCount": 1
       "ContainerName" : "ecsdemo-frontend-app"
-      "ContainerPort" : 8080       
+      "ContainerPort" : 8080 
 
-#Conditions: 
+Conditions: 
+  IsRollingUpdate: !Equals 
+    - !Ref DeployType
+    - ECS
 
 Resources: 
   FrontendWebAppService:
@@ -73,7 +76,7 @@ Resources:
       NetworkConfiguration:
         AwsvpcConfiguration:
 #          AssignPublicIp: ENABLED
-          AssignPublicIp: DISABLED          
+          AssignPublicIp: DISABLED
           SecurityGroups:
             - Fn::ImportValue: !Sub ${StackPrefix}-PublicECSSecurityGroup-ID
           Subnets:
@@ -83,11 +86,13 @@ Resources:
             - Fn::ImportValue: !Sub ${StackPrefix}-PrivateSubnetTwoId 
       DeploymentController:
         Type: !Ref DeployType
-      DeploymentConfiguration:
-        DeploymentCircuitBreaker:
-          Enable: true
-          Rollback: true
-        MinimumHealthyPercent: !Ref RollingUpdateMinimumHealthyPercent
+      DeploymentConfiguration: !If
+        - IsRollingUpdate
+        - DeploymentCircuitBreaker:         
+            Enable: true
+            Rollback: true
+          MinimumHealthyPercent: !Ref RollingUpdateMinimumHealthyPercent
+        - !Ref AWS::NoValue
       Tags:
         - Key: Name
           Value: !Sub ${StackPrefix}-FrontendWebAppService
@@ -118,14 +123,17 @@ Resources:
             - Fn::ImportValue: !Sub ${StackPrefix}-PrivateSubnetTwoId
       DeploymentController:
         Type: !Ref DeployType
-      DeploymentConfiguration:
-        DeploymentCircuitBreaker:
-          Enable: true
-          Rollback: true
-        MinimumHealthyPercent: !Ref RollingUpdateMinimumHealthyPercent
+      DeploymentConfiguration: !If
+        - IsRollingUpdate
+        - DeploymentCircuitBreaker:         
+            Enable: true
+            Rollback: true
+          MinimumHealthyPercent: !Ref RollingUpdateMinimumHealthyPercent
+        - !Ref AWS::NoValue
       Tags:
         - Key: Name
           Value: !Sub ${StackPrefix}-BackendService
+
 Outputs:
   FrontendWebAppService:
     Description: Frontend ECS Service
@@ -144,7 +152,7 @@ Outputs:
         - ""
         - - "http://"
           - Fn::ImportValue: !Sub ${StackPrefix}-PubALB-DNS                
-          - "/backend-for-frontend/index.html"    
+          - "/backend-for-frontend/index.html"
   BackendService:
     Description: Backend ECS Service
     Value: !Ref BackendService
@@ -162,4 +170,4 @@ Outputs:
         - ""
         - - "http://"
           - Fn::ImportValue: !Sub ${StackPrefix}-PrivALB-DNS                
-          - "/backend/api/v1/users"  
+          - "/backend/api/v1/users"

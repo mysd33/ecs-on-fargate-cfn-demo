@@ -18,6 +18,9 @@ Resources:
     Type: AWS::ECS::Cluster
     Properties:
       ClusterName: !Sub ${StackPrefix}-Frontend-Cluster
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
       Tags:
         - Key: Name
           Value: !Sub ${StackPrefix}-Frontend-Cluster
@@ -26,6 +29,9 @@ Resources:
     Type: AWS::ECS::Cluster
     Properties:
       ClusterName: !Sub ${StackPrefix}-Backtend-Cluster
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
       Tags:
         - Key: Name
           Value: !Sub ${StackPrefix}-Backend-Cluster

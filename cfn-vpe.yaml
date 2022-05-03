@@ -12,7 +12,7 @@ Parameters:
 
 #Conditions: 
 
-Resources: 
+Resources:
 # VPC Endpoint for S3
   S3VPCEndpoint:
     Type: AWS::EC2::VPCEndpoint
@@ -39,7 +39,7 @@ Resources:
         - Fn::ImportValue: !Sub ${StackPrefix}-VPCEndpointSecurityGroup-ID                      
       PrivateDnsEnabled: true
 
-# VPC Endpoint for ECR
+# ECR VPC Endpoint
   ECRApiVPCEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:      
