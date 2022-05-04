@@ -47,6 +47,7 @@ aws cloudformation create-stack --stack-name ECS-IAM-Stack --template-body file:
 aws cloudformation validate-template --template-body file://cfn-ecr.yaml
 aws cloudformation create-stack --stack-name ECR-Stack --template-body file://cfn-ecr.yaml
 ```
+* ２つのSpringBootAP用と、ログ転送にFireLens利用時のFluentBit用のリポジトリが作成される。
 ### 3. CodeBuildのプロジェクト作成
 ```sh
 aws cloudformation validate-template --template-body file://cfn-bff-codebuild.yaml
@@ -64,8 +65,27 @@ aws cloudformation create-stack --stack-name Backend-CodeBuild-Stack --template-
     * https://docs.aws.amazon.com/ja_jp/codebuild/latest/userguide/build-caching.html  
     * https://aws.amazon.com/jp/blogs/devops/how-to-enable-caching-for-aws-codebuild/
 
-### 3. ECRへ最初のDockerイメージをプッシュ
-2つのCodeBuildプロジェクトが作成されるので、それぞれビルド実行し、ECRにDockerイメージをプッシュさせる。
+### 3. ECRへアプリケーションの最初のDockerイメージをプッシュ
+* 2つのCodeBuildプロジェクトが作成されるので、それぞれビルド実行し、ECRにDockerイメージをプッシュさせる。
+
+### 4. （FireLens利用時のみ）Fluent BitのDockerイメージプッシュ
+* ログ転送にFireLensを利用する場合、サイドカーコンテナで使用するFluent BitのDockerイメージのビルドし、ECRにイメージをプッシュする
+```sh
+cd firelens
+set AWS_ACCOUNT_ID=(アカウントID)
+set AWS_REGION=(リージョン)　#例: set AWS_REGION=ap-northeast-1
+aws ecr get-login-password --region %AWS_REGION% | docker login --username AWS --password-stdin %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com
+```
+```sh
+docker build -t fluent-bit-bff -f DockerFileForBff .
+docker tag fluent-bit-bff:latest %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/fluent-bit-bff:latest
+docker push %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/fluent-bit-bff:latest
+```
+```sh
+docker build -t fluent-bit-backend -f DockerFileForBackend .
+docker tag fluent-bit-backend:latest %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/fluent-bit-backend:latest
+docker push %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/fluent-bit-backend:latest
+```
 
 ## ネットワーク環境
 ### 1. VPCおよびサブネット、Publicサブネット向けInternetGateway等の作成
@@ -87,8 +107,9 @@ aws cloudformation validate-template --template-body file://cfn-vpe.yaml
 aws cloudformation create-stack --stack-name ECS-VPE-Stack --template-body file://cfn-vpe.yaml
 ```
 ### 4.（作成任意）NAT Gatewayの作成とプライベートサブネットのルートテーブル更新
-* 本手順では、ECRのイメージ転送量等にかかるNAT Gatewayのコストが全体の割合からすると大きく節約のためVPC Endpointを作成するので、NAT Gatewayは通常不要。
-* 本手順をカスタマイズして、VPC Endpoint未作成のリソースアクセスに使用したい場合に以下を追加実行すればよい。
+* 本手順では、ECRのイメージ転送量等にかかるNAT Gatewayのコスト節約から、全てVPC Endpointで作成するので、NAT Gatewayは通常不要。
+  * とはいえ、全部VPC Endpointにすると、エンドポイント数分、デモ程度で何度も起動したり落としたりで1時間未満でも時間単位課金でコストがかえって結構かかる場合もある。その場合の調整として、本手順のVPC Endpoint作成対象を減らす等カスタマイズして、VPC Endpoint未作成のリソースアクセスに使用するために以下を追加実行すればよい。
+
 ```sh
 aws cloudformation validate-template --template-body file://cfn-ngw.yaml
 aws cloudformation create-stack --stack-name ECS-NATGW-Stack --template-body file://cfn-ngw.yaml
@@ -125,27 +146,35 @@ aws cloudformation create-stack --stack-name ECS-CLUSTER-Stack --template-body f
   * 「Mappings:」の「BackendClusterDefinitionMap:」の「KeyPairName:」  
     * 「myKeyPair」となっているところを自分のキーペア名に修正
 ### 3. ECSタスク定義の作成
-* タスク定義
+#### 3-1. ログ転送先がCloud Watch Logs（awslogsドライバ）の場合
+* awslogsドライバのタスク定義を作成
 ```sh
 aws cloudformation validate-template --template-body file://cfn-ecs-task.yaml
 aws cloudformation create-stack --stack-name ECS-TASK-Stack --template-body file://cfn-ecs-task.yaml
 ```
+#### 3-2. カスタムログルーティング（FireLens）の場合
+* TBD: awsfirelensドライバのタスク定義を作成中
+```sh
+aws cloudformation validate-template --template-body file://cfn-ecs-task-firelens.yaml
+aws cloudformation create-stack --stack-name ECS-TASK-Stack --template-body file://cfn-ecs-task-firelens.yaml
+```
 
-### 4-1. ECSサービスの実行（ローリングアップデートの場合）
+### 4. ECSサービスの実行
+#### 4-1. ローリングアップデートの場合
 * ローリングアップデートの場合は以下を実行
 ```sh
 aws cloudformation validate-template --template-body file://cfn-ecs-service.yaml
 aws cloudformation create-stack --stack-name ECS-SERVICE-Stack --template-body file://cfn-ecs-service.yaml
 ```
 * パラメータMinimumHealthyPercentを0%にしていて、1,2分気持ちローリングアップデートの時間が短くなるようになっている
-### 8-2. ECSサービスの実行（BlueGreenデプロイメントの場合）
+#### 4-2. BlueGreenデプロイメントの場合
 * BlueGreenデプロイメントの場合は以下のパラメータを指定して起動
 ```sh
 aws cloudformation validate-template --template-body file://cfn-ecs-service.yaml
 aws cloudformation create-stack --stack-name ECS-SERVICE-Stack --template-body file://cfn-ecs-service.yaml --parameters ParameterKey=DeployType,ParameterValue=CODE_DEPLOY
 ```
 
-### 9. APの実行確認
+### 5. APの実行確認
 * Backendアプリケーションの確認  
   * VPCのパブリックサブネット上にBationのEC2を起動
 ```sh
@@ -166,7 +195,7 @@ aws cloudformation create-stack --stack-name Demo-Bastion-Stack --template-body 
   * /ecs/logs/Demo-backend-ecs-group
   * /ecs/logs/Demo-bff-ecs-group
 
-### 10. Application AutoScalingの設定
+### 6. Application AutoScalingの設定
 * 以下のコマンドで、ターゲット追跡スケーリングポリシーでオートスケーリング設定
 ```sh
 aws cloudformation validate-template --template-body file://cfn-ecs-autoscaling.yaml
