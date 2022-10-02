@@ -127,7 +127,7 @@ Resources:
             #TODO: ElastiCache for Redis
             #- Name: REDIS_CLUSTER_ENDPOINT
             #  Value: TBD            
-            - Name: SPRING_SESSION_SESSIONSTORE-TYPE
+            - Name: SPRING_SESSION_STORE-TYPE
               Value: none
             - Name: MANAGEMENT_HEALTH_REDIS_ENABLED
               Value: false              
