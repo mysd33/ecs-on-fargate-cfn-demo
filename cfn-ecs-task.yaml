@@ -129,7 +129,8 @@ Resources:
             #  Value: TBD            
             - Name: SPRING_SESSION_SESSIONSTORE-TYPE
               Value: none
-
+            - Name: MANAGEMENT_HEALTH_REDIS_ENABLED
+              Value: false              
           Memory: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvironmentType, ContainerMemory]
           LogConfiguration:
             LogDriver: awslogs
