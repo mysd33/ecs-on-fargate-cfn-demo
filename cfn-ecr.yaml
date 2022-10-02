@@ -10,11 +10,13 @@ Parameters:
   BffRepositoryName:
     Description: Bff App Repository Name
     Type: String
-    Default: mynavi-sample-ecs-bff
+    #Default: mynavi-sample-ecs-bff
+    Default: sample-bff
   BackendRepositoryName:
     Description: Backend App Repository Name
     Type: String
-    Default: mynavi-sample-ecs-backend
+    #Default: mynavi-sample-ecs-backend
+    Default: sample-backend
   BffFluentBitRepositoryName:
     Description: Bff Sidecar Fluent Bit Repository Name
     Type: String

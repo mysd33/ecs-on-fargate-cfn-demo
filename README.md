@@ -39,12 +39,12 @@ aws cloudformation create-stack --stack-name ECS-IAM-Stack --template-body file:
 ## CI環境
 ### 1. アプリケーションのCodeCommit環境
 * 別途、以下の2つのSpringBootAPのプロジェクトが以下のリポジトリ名でCodeCommitにある前提
-  * backend-for-frontend
+  * sample-bff
     * BFFのAP
-    * backend-for-frontendという別のリポジトリに資材は格納
-  * backend
+    * sample-bffという別のリポジトリに資材は格納
+  * sample-backend
     * BackendのAP
-    * backendという別のリポジトリに資材は格納
+    * sample-backendという別のリポジトリに資材は格納
 
 ### 2. ECRの作成
 ```sh
@@ -120,6 +120,8 @@ aws cloudformation validate-template --template-body file://cfn-ngw.yaml
 aws cloudformation create-stack --stack-name ECS-NATGW-Stack --template-body file://cfn-ngw.yaml
 ```
 
+## ElastiCache環境
+* TBD:　今後ElastiCache for Redisのサンプル作成を検討
 ## DB環境
 * TBD:　今後Aurora等のRDBリソースのサンプル作成を検討
 
@@ -189,12 +191,13 @@ aws cloudformation create-stack --stack-name Demo-Bastion-Stack --template-body 
   * 必要に応じてキーペア名等のパラメータを指定
     * 「--parameters ParameterKey=KeyPairName,ParameterValue=myKeyPair」
   * BastionのEC2のアドレスは、CloudFormationの「Demo-Bastion-Stack」スタックの出力「BastionDNSName」のURLを参照    
-  * EC2にSSHでログインし、以下のコマンドを「curl http://(Private ALBのDNS名)/backend/api/v1/users」を入力するとバックエンドサービスAPのJSONレスポンスが返却
+  * EC2にSSHでログインし、以下のコマンドを「curl http://(Private ALBのDNS名)/api/v1/todos/」を入力するとバックエンドサービスAPのJSONレスポンスが返却
     * CloudFormationの「ECS-SERVICE-Stack」スタックの出力「BackendServiceURI」のURLを参照
 
 * BFFアプリケーションの確認
-  * ブラウザで「http://(Public ALBのDNS名)/backend-for-frontend/index.html」を入力しフロントエンドAPの画面が表示される
+  * ブラウザで「http://(Public ALBのDNS名)」を入力しフロントエンドAPの画面が表示される
     * CloudFormationの「ECS-SERVICE-Stack」スタックの出力「FrontendWebAppServiceURI」のURLを参照
+  * アプリケーションの操作方法は「sample-bff」のリポジトリのREADME.mdを参照
 
 * APログの確認
   * うまく動作しない場合、APログ等にエラーが出ていないか確認するとよい
@@ -226,11 +229,10 @@ sudo yum install httpd-tools
 ```
   * 以下のいずれかのabコマンドを実行
 ```sh
-ab -n 1000000 -c 1000 http://(Private ALBのDNS名)/backend/api/v1/users
+ab -n 1000000 -c 1000 http://(Private ALBのDNS名)/api/v1/todos/
 ```
 ```sh
-ab -n 1000000 -c 1000 http://(Public ALBのDNS名).ap-northeast-1.elb.
-amazonaws.com/backend-for-frontend/index.html
+ab -n 1000000 -c 1000 http://(Public ALBのDNS名)/
 ```
 * うまくCPU使用率75%以上にならない場合は、abコマンドのパラメータを調整するか、cfn-autoscaling.yamlのCPUUtilizationの値を下げて調整する
 * 対象のECSサービスに関するCPU使用率に関するCloudWatchアラームが出ていることを確認

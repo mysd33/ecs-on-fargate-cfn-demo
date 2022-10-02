@@ -20,21 +20,24 @@ Mappings:
       "Memory" : 1024
       "Cpu" : 512
       "ContainerName" : "ecsdemo-frontend-app"
-      "ContainerImage" : "mynavi-sample-ecs-bff:latest"
+      #"ContainerImage" : "mynavi-sample-ecs-bff:latest"
+      "ContainerImage" : "sample-bff:latest"
       "ContainerPort" : 8080
       "Profile" : "production,log_container"
     Staging:
       "Memory" : 1024
       "Cpu" : 512
       "ContainerName" : "ecsdemo-frontend-app"
-      "ContainerImage" : "mynavi-sample-ecs-bff:latest"
+      #"ContainerImage" : "mynavi-sample-ecs-bff:latest"
+      "ContainerImage" : "sample-bff:latest"
       "ContainerPort" : 8080            
       "Profile" : "staging,log_container"
     Dev:
       "Memory" : 1024
       "Cpu" : 512
       "ContainerName" : "ecsdemo-frontend-app"
-      "ContainerImage" : "mynavi-sample-ecs-bff:latest"
+      #"ContainerImage" : "mynavi-sample-ecs-bff:latest"
+      "ContainerImage" : "sample-bff:latest"      
       "ContainerPort" : 8080
       "Profile" : "dev,log_container"
   BackendServiceTaskDefinitionMap:
@@ -42,21 +45,24 @@ Mappings:
       "Memory" : 1024
       "Cpu" : 512
       "ContainerName" : "ecsdemo-backend-service"
-      "ContainerImage" : "mynavi-sample-ecs-backend:latest"
+      #"ContainerImage" : "mynavi-sample-ecs-backend:latest"
+      "ContainerImage" : "sample-backend:latest"
       "ContainerPort" : 8080      
       "Profile" : "production,log_container"
     Staging:
       "Memory" : 1024
       "Cpu" : 512
       "ContainerName" : "ecsdemo-backend-service"
-      "ContainerImage" : "mynavi-sample-ecs-backend:latest"
+      #"ContainerImage" : "mynavi-sample-ecs-backend:latest"
+      "ContainerImage" : "sample-backend:latest"
       "ContainerPort" : 8080      
       "Profile" : "staging,log_container"
     Dev:
       "Memory" : 1024
       "Cpu" : 512
       "ContainerName" : "ecsdemo-backend-service"
-      "ContainerImage" : "mynavi-sample-ecs-backend:latest"
+      #"ContainerImage" : "mynavi-sample-ecs-backend:latest"
+      "ContainerImage" : "sample-backend:latest"
       "ContainerPort" : 8080      
       "Profile" : "dev,log_container"
 

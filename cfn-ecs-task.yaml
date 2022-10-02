@@ -20,7 +20,8 @@ Mappings:
       "Memory" : 1024
       "Cpu" : 512
       "ContainerName" : "ecsdemo-frontend-app"
-      "ContainerImage" : "mynavi-sample-ecs-bff:latest"
+      #"ContainerImage" : "mynavi-sample-ecs-bff:latest"
+      "ContainerImage" : "sample-bff:latest"
       "ContainerPort" : 8080
       "ContainerMemory" : 1024
       "Profile" : "production,log_container"
@@ -28,7 +29,8 @@ Mappings:
       "Memory" : 1024
       "Cpu" : 512
       "ContainerName" : "ecsdemo-frontend-app"
-      "ContainerImage" : "mynavi-sample-ecs-bff:latest"
+      #"ContainerImage" : "mynavi-sample-ecs-bff:latest"
+      "ContainerImage" : "sample-bff:latest"
       "ContainerPort" : 8080      
       "ContainerMemory" : 1024
       "Profile" : "staging,log_container"
@@ -36,7 +38,8 @@ Mappings:
       "Memory" : 1024
       "Cpu" : 512
       "ContainerName" : "ecsdemo-frontend-app"
-      "ContainerImage" : "mynavi-sample-ecs-bff:latest"
+      #"ContainerImage" : "mynavi-sample-ecs-bff:latest"
+      "ContainerImage" : "sample-bff:latest"
       "ContainerPort" : 8080
       "ContainerMemory" : 1024
       "Profile" : "dev,log_container"
@@ -45,7 +48,8 @@ Mappings:
       "Memory" : 1024
       "Cpu" : 512
       "ContainerName" : "ecsdemo-backend-service"
-      "ContainerImage" : "mynavi-sample-ecs-backend:latest"
+      #"ContainerImage" : "mynavi-sample-ecs-backend:latest"
+      "ContainerImage" : "sample-backend:latest"
       "ContainerPort" : 8080
       "ContainerMemory" : 1024
       "Profile" : "production,log_container"
@@ -53,7 +57,8 @@ Mappings:
       "Memory" : 1024
       "Cpu" : 512
       "ContainerName" : "ecsdemo-backend-service"
-      "ContainerImage" : "mynavi-sample-ecs-backend:latest"
+      #"ContainerImage" : "mynavi-sample-ecs-backend:latest"
+      "ContainerImage" : "sample-backend:latest"
       "ContainerPort" : 8080
       "ContainerMemory" : 1024
       "Profile" : "staging,log_container"
@@ -61,7 +66,8 @@ Mappings:
       "Memory" : 1024
       "Cpu" : 512
       "ContainerName" : "ecsdemo-backend-service"
-      "ContainerImage" : "mynavi-sample-ecs-backend:latest"
+      #"ContainerImage" : "mynavi-sample-ecs-backend:latest"
+      "ContainerImage" : "sample-backend:latest"
       "ContainerPort" : 8080
       "ContainerMemory" : 1024
       "Profile" : "dev,log_container"
@@ -118,6 +124,12 @@ Resources:
                   - ""
                   - - "http://"
                     - Fn::ImportValue: !Sub ${StackPrefix}-PrivALB-DNS                
+            #TODO: ElastiCache for Redis
+            #- Name: REDIS_CLUSTER_ENDPOINT
+            #  Value: TBD            
+            - Name: SPRING_SESSION_SESSIONSTORE-TYPE
+              Value: none
+
           Memory: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvironmentType, ContainerMemory]
           LogConfiguration:
             LogDriver: awslogs

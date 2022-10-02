@@ -17,16 +17,16 @@ Parameters:
     MinLength: 1
     MaxLength: 255
     AllowedPattern: ^[-¥.¥/a-zA-Z0-9]*$
-    Default: /backend-for-frontend/index.html
-    #Default: /backend-for-frontend/actuator/health
+    #Default: /backend-for-frontend/index.html
+    Default: /actuator/health
   BackendHealthCheckPath:
     Description: Backend Service Default health check path
     Type: String
     MinLength: 1
     MaxLength: 255
     AllowedPattern: ^[-¥.¥/a-zA-Z0-9]*$
-    Default: /backend/api/v1/users
-    #Default: /backend/actuator/health    
+    #Default: /backend/api/v1/users
+    Default: /actuator/health    
 
 Mappings:
   DeployEnvironmentMap:

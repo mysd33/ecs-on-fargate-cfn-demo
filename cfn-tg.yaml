@@ -16,13 +16,13 @@ Mappings:
   TargetGroupDefinitionMap:
     FrontendWebApp:
       "PathPattern": "/backend-for-frontend/*"
-      "HealthCheckPath": "/backend-for-frontend/index.html"
-#     "HealthCheckPath": "/backend-for-frontend/actuator/health"
+#      "HealthCheckPath": "/backend-for-frontend/index.html"
+      "HealthCheckPath": "/actuator/health"
       "Priority": 1
     BackendService:
       "PathPattern": "/backend/*"
-      "HealthCheckPath": "/backend/api/v1/users"
-#     "HealthCheckPath": "/backend/actuator/health"
+#      "HealthCheckPath": "/backend/api/v1/users"
+      "HealthCheckPath": "/actuator/health"
       "Priority": 1
 #   BackendSampleService:
 #     "PathPattern": "/backend/api/v1/sample*"
