@@ -24,7 +24,9 @@ Mappings:
       "ContainerImage" : "sample-bff:latest"
       "ContainerPort" : 8080
       "ContainerMemory" : 1024
-      "Profile" : "production,log_container"
+      #TODO
+      #"Profile" : "production,log_container"
+      "Profile" : "dev,log_container"
     Staging:
       "Memory" : 1024
       "Cpu" : 512
@@ -125,12 +127,8 @@ Resources:
                   - - "http://"
                     - Fn::ImportValue: !Sub ${StackPrefix}-PrivALB-DNS                
             #TODO: ElastiCache for Redis
-            #- Name: REDIS_CLUSTER_ENDPOINT
-            #  Value: TBD            
-            - Name: SPRING_SESSION_STORE-TYPE
-              Value: none
-            - Name: MANAGEMENT_HEALTH_REDIS_ENABLED
-              Value: false              
+            #- Name: SPRING_REDIS_HOST
+            #  Value: ""            
           Memory: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvironmentType, ContainerMemory]
           LogConfiguration:
             LogDriver: awslogs
