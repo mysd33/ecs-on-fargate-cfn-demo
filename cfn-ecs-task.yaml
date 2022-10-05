@@ -118,9 +118,9 @@ Resources:
           PortMappings:
             - ContainerPort: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvironmentType, ContainerPort]
           Environment:
-            - Name: ENV_TYPE
+            - Name: SPRING_PROFILES_ACTIVE
               Value: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvironmentType, Profile]            
-            - Name: BACKEND_URL
+            - Name: API_BACKEND_URL
               Value: 
                 Fn::Join: 
                   - ""
@@ -163,7 +163,7 @@ Resources:
           PortMappings:
             - ContainerPort: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvironmentType, ContainerPort]              
           Environment:
-            - Name: ENV_TYPE
+            - Name: SPRING_PROFILES_ACTIVE
               Value: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvironmentType, Profile]
           Memory: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvironmentType, ContainerMemory]          
           LogConfiguration:

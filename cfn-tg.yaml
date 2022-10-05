@@ -1,6 +1,8 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: ALB TargetGroup Template for CloudFormation Demo. Depends On cfn-vpc.yaml, cfn-alb.yaml.
 
+#This template is not used.
+
 Parameters:
   StackPrefix:
     Description: Stack Resource Name Prefix
@@ -15,12 +17,14 @@ Parameters:
 Mappings:
   TargetGroupDefinitionMap:
     FrontendWebApp:
-      "PathPattern": "/backend-for-frontend/*"
+#      "PathPattern": "/backend-for-frontend/*"
+      "PathPattern": "/*"
 #      "HealthCheckPath": "/backend-for-frontend/index.html"
       "HealthCheckPath": "/actuator/health"
       "Priority": 1
     BackendService:
-      "PathPattern": "/backend/*"
+#      "PathPattern": "/backend/*"
+      "PathPattern": "/*"
 #      "HealthCheckPath": "/backend/api/v1/users"
       "HealthCheckPath": "/actuator/health"
       "Priority": 1
