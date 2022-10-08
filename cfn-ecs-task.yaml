@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: ECS Task Definition Template for CloudFormation Demo. Depends on cfn-iam.yaml, cfn-ecr.yaml
+Description: ECS Task Definition Template for CloudFormation Demo. Depends on cfn-iam.yaml, cfn-ecr.yaml, cfn-ecache-redis.yaml
 #Metadata: 
 
 Parameters: 
@@ -23,10 +23,9 @@ Mappings:
       #"ContainerImage" : "mynavi-sample-ecs-bff:latest"
       "ContainerImage" : "sample-bff:latest"
       "ContainerPort" : 8080
-      "ContainerMemory" : 1024
-      #TODO
-      #"Profile" : "production,log_container"
-      "Profile" : "dev,log_container"
+      "ContainerMemory" : 1024      
+      "Profile" : "production,log_container"
+      #"Profile" : "dev,log_container"
     Staging:
       "Memory" : 1024
       "Cpu" : 512
@@ -126,9 +125,9 @@ Resources:
                   - ""
                   - - "http://"
                     - Fn::ImportValue: !Sub ${StackPrefix}-PrivALB-DNS                
-            #TODO: ElastiCache for Redis
-            #- Name: SPRING_REDIS_HOST
-            #  Value: ""            
+            - Name: SPRING_REDIS_HOST
+              Value:
+                Fn::ImportValue: !Sub ${StackPrefix}-ECachePrimaryEndPoint
           Memory: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvironmentType, ContainerMemory]
           LogConfiguration:
             LogDriver: awslogs

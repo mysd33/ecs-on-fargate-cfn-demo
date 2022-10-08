@@ -121,7 +121,12 @@ aws cloudformation create-stack --stack-name ECS-NATGW-Stack --template-body fil
 ```
 
 ## ElastiCache環境
-* TBD:　今後ElastiCache for Redisのサンプル作成を検討
+### 1. ElastiCache for Redisのクラスタ作成
+* BFFのAP(sample-bff)ではHTTPセッションを扱うがスケールイン/アウトにも対応できるようセッションを外部化し管理するために、ElasticCache for Redisを作成する。
+```sh
+aws cloudformation validate-template --template-body file://cfn-ecache-redis.yaml
+aws cloudformation create-stack --stack-name ECS-ECACHE-Stack --template-body file://cfn-ecache-redis.yaml
+```
 ## DB環境
 * TBD:　今後Aurora等のRDBリソースのサンプル作成を検討
 
