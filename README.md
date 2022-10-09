@@ -22,6 +22,10 @@
 * CodePipeline、CodeBuildのArtifact用、キャッシュ用のS3バケットを作成しておく
 * FireLensを利用する場合はログ出力のS3バケットも作成しておく
   * 後続の手順で、バケット名を変更するパラメータがあるところで指定
+
+## CloudFormationのコマンドについて
+* ここでは、aws cloudformation create-stackコマンドを使っているが、deployコマンド等、使う場合は適宜コマンドを読み替えて実行すること
+  * 詳細は[（参考）CloudFormationコマンド文法メモ](#参考cloudformationコマンド文法メモ)を参照
 ## IAM
 ### 1. IAMの作成
 ```sh
@@ -34,7 +38,6 @@ aws cloudformation create-stack --stack-name ECS-IAM-Stack --template-body file:
     
 * TBD
   * IAMポリシーの記載は精査中
-  * RDB対応時は、ECSタスクへのIAMロールの付与のため修正が必要
 
 ## CI環境
 ### 1. アプリケーションのCodeCommit環境
@@ -223,7 +226,7 @@ aws cloudformation create-stack --stack-name Demo-Bastion-Stack --template-body 
         * /ecs/logs/fluentbit-bff-sidecar
     * S3
       * (ログ出力用のバケット)/fluent-bit-logs/
-* redis-cliでElastiCacheにアクセスしたい場合
+* Bastionからredis-cliでElastiCacheにアクセスしたい場合
   * 以下参考に、redis-cliをインストールして接続するとよい
   ```sh
   sudo amazon-linux-extras install epel -y
@@ -238,7 +241,7 @@ aws cloudformation create-stack --stack-name Demo-Bastion-Stack --template-body 
 
   > keys *  
   ```
-* psqlでAuroraにアクセスしたい場合
+* BastionからpsqlでAuroraにアクセスしたい場合
   * 以下参考に、Bastionにpsqlをインストールするとよい
     * https://techviewleo.com/how-to-install-postgresql-database-on-amazon-linux/
   ```sh
