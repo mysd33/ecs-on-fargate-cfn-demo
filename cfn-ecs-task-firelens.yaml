@@ -13,6 +13,22 @@ Parameters:
     AllowedValues: ["Dev", "Staging", "Production"]
     Default: Production
     ConstraintDescription: must be a prod or test
+  DBUsername:
+    NoEcho: 'true'
+    Description: Username for PostgreSQL database access
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+  DBPassword:
+    NoEcho: 'true'
+    Description: Password for PostgreSQL database access
+    Type: String
+    MinLength: '8'
+    MaxLength: '41'
+    AllowedPattern: '[a-zA-Z0-9]*'
+    ConstraintDescription: must contain only alphanumeric characters.    
 
 Mappings: 
   FrontendAppTaskDefinitionMap:
@@ -122,6 +138,20 @@ Resources:
             - Name: SPRING_REDIS_HOST
               Value:
                 Fn::ImportValue: !Sub ${StackPrefix}-ECachePrimaryEndPoint                    
+            - Name: SPRING_DATASOURCE_URL
+              Value:
+                Fn::Join: 
+                  - ""
+                  - - "jdbc:postgresql://"
+                    - Fn::ImportValue: !Sub ${StackPrefix}-RDSClusterEndpointAddress
+                    - ":"
+                    - Fn::ImportValue: !Sub ${StackPrefix}-RDSClusterEndpoint
+                    - "/"
+                    - Fn::ImportValue: !Sub ${StackPrefix}-RDSDBName
+            - Name: SPRING_DATASOURCE_USERNAME
+              Value: !Ref DBUsername 
+            - Name: SPRING_DATASOURCE_PASSWORD
+              Value: !Ref DBPassword                
           LogConfiguration:
             LogDriver: awsfirelens
         - Name: frontend_log_router
@@ -167,6 +197,20 @@ Resources:
           Environment:
             - Name: SPRING_PROFILES_ACTIVE
               Value: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvironmentType, Profile]          
+            - Name: SPRING_DATASOURCE_URL
+              Value:
+                Fn::Join: 
+                  - ""
+                  - - "jdbc:postgresql://"
+                    - Fn::ImportValue: !Sub ${StackPrefix}-RDSClusterEndpointAddress
+                    - ":"
+                    - Fn::ImportValue: !Sub ${StackPrefix}-RDSClusterEndpoint
+                    - "/"
+                    - Fn::ImportValue: !Sub ${StackPrefix}-RDSDBName
+            - Name: SPRING_DATASOURCE_USERNAME
+              Value: !Ref DBUsername 
+            - Name: SPRING_DATASOURCE_PASSWORD
+              Value: !Ref DBPassword              
           LogConfiguration:
             LogDriver: awsfirelens
         - Name: backend_log_router

@@ -128,7 +128,11 @@ aws cloudformation validate-template --template-body file://cfn-ecache-redis.yam
 aws cloudformation create-stack --stack-name ECS-ECACHE-Stack --template-body file://cfn-ecache-redis.yaml
 ```
 ## DB環境
-* TBD:　今後Aurora等のRDBリソースのサンプル作成を検討
+* 各サンプルAPではRDBでデータ管理するため、Aurora for PostgreSQLを作成する。  
+```sh
+aws cloudformation validate-template --template-body file://cfn-rds-aurora.yaml
+aws cloudformation create-stack --stack-name ECS-Aurora-Stack --template-body file://cfn-rds-aurora.yaml --parameters ParameterKey=DBUsername,ParameterValue=postgres ParameterKey=DBPassword,ParameterValue=password
+```
 
 ## ECS環境
 ### 1. ALBの作成
@@ -162,13 +166,13 @@ aws cloudformation create-stack --stack-name ECS-CLUSTER-Stack --template-body f
 * awslogsドライバのタスク定義を作成
 ```sh
 aws cloudformation validate-template --template-body file://cfn-ecs-task.yaml
-aws cloudformation create-stack --stack-name ECS-TASK-Stack --template-body file://cfn-ecs-task.yaml
+aws cloudformation create-stack --stack-name ECS-TASK-Stack --template-body file://cfn-ecs-task.yaml --parameters ParameterKey=DBUsername,ParameterValue=postgres ParameterKey=DBPassword,ParameterValue=password
 ```
 #### 3-2. カスタムログルーティング（FireLens + Fluent Bit）の場合
 * awsfirelensドライバのタスク定義を作成
 ```sh
 aws cloudformation validate-template --template-body file://cfn-ecs-task-firelens.yaml
-aws cloudformation create-stack --stack-name ECS-TASK-Stack --template-body file://cfn-ecs-task-firelens.yaml
+aws cloudformation create-stack --stack-name ECS-TASK-Stack --template-body file://cfn-ecs-task-firelens.yaml --parameters ParameterKey=DBUsername,ParameterValue=postgres ParameterKey=DBPassword,ParameterValue=password
 ```
 
 ### 4. ECSサービスの実行
@@ -219,6 +223,41 @@ aws cloudformation create-stack --stack-name Demo-Bastion-Stack --template-body 
         * /ecs/logs/fluentbit-bff-sidecar
     * S3
       * (ログ出力用のバケット)/fluent-bit-logs/
+* redis-cliでElastiCacheにアクセスしたい場合
+  * 以下参考に、redis-cliをインストールして接続するとよい
+  ```sh
+  sudo amazon-linux-extras install epel -y
+  sudo yum install gcc jemalloc-devel openssl-devel tcl tcl-devel -y
+  sudo wget http://download.redis.io/redis-stable.tar.gz
+  sudo tar xvzf redis-stable.tar.gz
+  cd redis-stable
+  sudo make BUILD_TLS=yes
+
+  src/redis-cli -h (ElastiCacheのEndpoint)
+  # CloudFormationの「ECS-ECACHE-Stack」スタックの出力「ElastiCachePrimaryEndPoint」
+
+  > keys *  
+  ```
+* psqlでAuroraにアクセスしたい場合
+  * 以下参考に、Bastionにpsqlをインストールするとよい
+    * https://techviewleo.com/how-to-install-postgresql-database-on-amazon-linux/
+  ```sh
+  sudo amazon-linux-extras install epel
+
+  sudo tee /etc/yum.repos.d/pgdg.repo<<EOF
+  [pgdg14]
+  name=PostgreSQL 14 for RHEL/CentOS 7 - x86_64
+  baseurl=http://download.postgresql.org/pub/repos/yum/14/redhat/rhel-7-x86_64
+  enabled=1
+  gpgcheck=0
+  EOF
+  
+  sudo yum makecache
+  sudo yum install postgresql14
+  
+  #DBに接続  
+  psql -h aurora-postgresql-cluster.cluster-crby0oqsjgv1.ap-northeast-1.rds.amazonaws.com -U postgres -d testdb    
+  ```
 
 ### 6. Application AutoScalingの設定
 * 以下のコマンドで、ターゲット追跡スケーリングポリシーでオートスケーリング設定

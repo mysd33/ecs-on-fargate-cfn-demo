@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: ALB Template for CloudFormation Demo. Depends on cfn-vpc.yaml, cfn-sg.yaml
+Description: ElastiCache Template for CloudFormation Demo. Depends on cfn-vpc.yaml, cfn-sg.yaml
 #Metadata: 
 
 Parameters: 
