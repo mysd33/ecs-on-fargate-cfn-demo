@@ -283,7 +283,7 @@ sudo yum install httpd-tools
 ab -n 1000000 -c 1000 http://(Private ALBのDNS名)/api/v1/todos/
 ```
 ```sh
-ab -n 1000000 -c 1000 http://(Public ALBのDNS名)/
+ab -n 1000000 -c 1000 http://(Public ALBのDNS名)/login
 ```
 * うまくCPU使用率75%以上にならない場合は、abコマンドのパラメータを調整するか、cfn-autoscaling.yamlのCPUUtilizationの値を下げて調整する
 * 対象のECSサービスに関するCPU使用率に関するCloudWatchアラームが出ていることを確認

@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: CodePipeline Template for CloudFormation Demo. Depends on cfn-iam.yaml, cfn-bff-codebuild.yaml
+Description: CodePipeline Template for CloudFormation Demo. Depends on cfn-iam.yaml, cfn-bff-codebuild.yaml, cfn-ecs-cluster.yaml, cfn-ecs-service.yaml
 #Metadata: 
 
 Parameters: 
