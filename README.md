@@ -125,13 +125,15 @@ aws cloudformation create-stack --stack-name ECS-NATGW-Stack --template-body fil
 
 ## ElastiCache環境
 ### 1. ElastiCache for Redisのクラスタ作成
-* BFFのAP(sample-bff)ではHTTPセッションを扱うがスケールイン/アウトにも対応できるようセッションを外部化し管理するために、ElasticCache for Redisを作成する。
+* BFFのAP(sample-bff)ではHTTPセッションを扱うがスケールイン/アウトにも対応できるようセッションを外部化し管理するために、ElasticCache for Redis（クラスタモード無効）を作成する。
+  * 作成にしばらく時間がかかる。
 ```sh
 aws cloudformation validate-template --template-body file://cfn-ecache-redis.yaml
 aws cloudformation create-stack --stack-name ECS-ECACHE-Stack --template-body file://cfn-ecache-redis.yaml
 ```
 ## DB環境
 * 各サンプルAPではRDBでデータ管理するため、Aurora for PostgreSQLを作成する。  
+  * 作成にしばらく時間がかかる。
 ```sh
 aws cloudformation validate-template --template-body file://cfn-rds-aurora.yaml
 aws cloudformation create-stack --stack-name ECS-Aurora-Stack --template-body file://cfn-rds-aurora.yaml --parameters ParameterKey=DBUsername,ParameterValue=postgres ParameterKey=DBPassword,ParameterValue=password
@@ -140,11 +142,13 @@ aws cloudformation create-stack --stack-name ECS-Aurora-Stack --template-body fi
 ## ECS環境
 ### 1. ALBの作成
 * ECSの前方で動作するALBとデフォルトのTarget Group等を作成
+  * パラメータTargateGroupAttributesに「deregistration_delay.timeout_seconds」を「60」で設定し、ローリングアップデートの時間を短縮する工夫している
 ```sh
 aws cloudformation validate-template --template-body file://cfn-alb.yaml
 aws cloudformation create-stack --stack-name ECS-ALB-Stack --template-body file://cfn-alb.yaml
 ```
 * BlueGreenデプロイメントの場合のみ以下実行し、2つ目（Green環境）用のTarget Groupを作成
+  * パラメータTargateGroupAttributesに「deregistration_delay.timeout_seconds」を「60」で設定し、ローリングアップデートの時間を短縮する工夫している
 ```sh
 aws cloudformation validate-template --template-body file://cfn-tg-bg.yaml
 aws cloudformation create-stack --stack-name ECS-TG-BG-Stack --template-body file://cfn-tg-bg.yaml
@@ -185,7 +189,7 @@ aws cloudformation create-stack --stack-name ECS-TASK-Stack --template-body file
 aws cloudformation validate-template --template-body file://cfn-ecs-service.yaml
 aws cloudformation create-stack --stack-name ECS-SERVICE-Stack --template-body file://cfn-ecs-service.yaml
 ```
-* パラメータMinimumHealthyPercentを0%にしていて、1,2分気持ちローリングアップデートの時間が短くなるようになっている
+* パラメータMinimumHealthyPercentを0%にしてローリングアップデートの時間を短縮する工夫をしている
 #### 4-2. BlueGreenデプロイメントの場合
 * BlueGreenデプロイメントの場合は以下のパラメータを指定して起動
 ```sh
