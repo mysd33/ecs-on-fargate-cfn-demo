@@ -123,7 +123,7 @@ aws cloudformation validate-template --template-body file://cfn-ngw.yaml
 aws cloudformation create-stack --stack-name ECS-NATGW-Stack --template-body file://cfn-ngw.yaml
 ```
 
-## ElastiCache環境
+## キャッシュ（ElastiCache）環境
 ### 1. ElastiCache for Redisのクラスタ作成
 * BFFのAP(sample-bff)ではHTTPセッションを扱うがスケールイン/アウトにも対応できるようセッションを外部化し管理するために、ElasticCache for Redis（クラスタモード無効）を作成する。
   * 作成にしばらく時間がかかる。
@@ -132,6 +132,7 @@ aws cloudformation validate-template --template-body file://cfn-ecache-redis.yam
 aws cloudformation create-stack --stack-name ECS-ECACHE-Stack --template-body file://cfn-ecache-redis.yaml
 ```
 ## DB環境
+### 1. Aurora for PostgreSQLのクラスタ作成
 * 各サンプルAPではRDBでデータ管理するため、Aurora for PostgreSQLを作成する。  
   * 作成にしばらく時間がかかる。
 ```sh
@@ -139,7 +140,7 @@ aws cloudformation validate-template --template-body file://cfn-rds-aurora.yaml
 aws cloudformation create-stack --stack-name ECS-Aurora-Stack --template-body file://cfn-rds-aurora.yaml --parameters ParameterKey=DBUsername,ParameterValue=postgres ParameterKey=DBPassword,ParameterValue=password
 ```
 
-## ECS環境
+## コンテナ（ECS）環境
 ### 1. ALBの作成
 * ECSの前方で動作するALBとデフォルトのTarget Group等を作成
   * パラメータTargateGroupAttributesに「deregistration_delay.timeout_seconds」を「60」で設定し、ローリングアップデートの時間を短縮する工夫している
