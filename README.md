@@ -327,6 +327,7 @@ aws cloudformation create-stack --stack-name Backend-CodeDeploy-Stack --template
 
 * Artifact用のS3バケット名を変えるには、それぞれのcfnスタック作成時のコマンドでパラメータを指定する
     * 「--parameters ParameterKey=ArtifactS3BucketName,ParameterValue=(バケット名)」  
+* 現状、テンプレート内の「DeploymentConfigName」が線形リリース（「CodeDeployDefault.ECSLinear10PercentEvery1Minutes」）になっているが、一度に切り替えたい場合は、通常のBlueGreenデプロイメント（CodeDeployDefault.ECSAllAtOnce）に変えるとよい。    
 ### 2. BlueGreenデプロイメント対応のCodePipelineの作成
 ```sh
 aws cloudformation validate-template --template-body file://cfn-bff-codepipeline-bg.yaml
