@@ -143,13 +143,15 @@ aws cloudformation create-stack --stack-name ECS-Aurora-Stack --template-body fi
 ## コンテナ（ECS）環境
 ### 1. ALBの作成
 * ECSの前方で動作するALBとデフォルトのTarget Group等を作成
-  * パラメータTargateGroupAttributesに「deregistration_delay.timeout_seconds」を「60」で設定し、ローリングアップデートの時間を短縮する工夫している
+  * パラメータTargateGroupAttributesに「deregistration_delay.timeout_seconds」を「60」で設定し、ローリングアップデートの時間を短縮する工夫している。
+  * 実機確認し設定しているが、AP起動が遅くヘルスチェックに失敗する場合には、パラメータ「HealthCheckIntervalSeconds」の値を長く調整するとよい。
 ```sh
 aws cloudformation validate-template --template-body file://cfn-alb.yaml
 aws cloudformation create-stack --stack-name ECS-ALB-Stack --template-body file://cfn-alb.yaml
 ```
 * BlueGreenデプロイメントの場合のみ以下実行し、2つ目（Green環境）用のTarget Groupを作成
-  * パラメータTargateGroupAttributesに「deregistration_delay.timeout_seconds」を「60」で設定し、ローリングアップデートの時間を短縮する工夫している
+  * パラメータTargateGroupAttributesに「deregistration_delay.timeout_seconds」を「60」で設定し、ローリングアップデートの時間を短縮する工夫している。
+  * 実機確認し設定しているが、AP起動が遅くヘルスチェックに失敗する場合には、パラメータ「HealthCheckIntervalSeconds」の値を長く調整するとよい。
 ```sh
 aws cloudformation validate-template --template-body file://cfn-tg-bg.yaml
 aws cloudformation create-stack --stack-name ECS-TG-BG-Stack --template-body file://cfn-tg-bg.yaml
@@ -263,8 +265,11 @@ aws cloudformation create-stack --stack-name Demo-Bastion-Stack --template-body 
   sudo yum makecache
   sudo yum install postgresql14
   
-  #DBに接続  
-  psql -h aurora-postgresql-cluster.cluster-crby0oqsjgv1.ap-northeast-1.rds.amazonaws.com -U postgres -d testdb    
+  #DBに接続    
+  psql -h (Auroraのクラスタエンドポイント) -U postgres -d testdb    
+  # CloudFormationの「ECS-Aurora-Stack」スタックの出力「RDSClusterEndpointAddress」   
+  > select * from m_user;
+  > select * from todo;  
   ```
 
 ### 6. Application AutoScalingの設定
