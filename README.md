@@ -167,10 +167,7 @@ aws cloudformation create-stack --stack-name ECS-TG-BG-Stack --template-body fil
 aws cloudformation validate-template --template-body file://cfn-ecs-cluster.yaml
 aws cloudformation create-stack --stack-name ECS-CLUSTER-Stack --template-body file://cfn-ecs-cluster.yaml
 ```
-* 必要に応じてキーペア名のパラメータ値を修正して使用
-  * 「Mappings:」の「FrontendClusterDefinitionMap:」の「KeyPairName:」
-  * 「Mappings:」の「BackendClusterDefinitionMap:」の「KeyPairName:」  
-    * 「myKeyPair」となっているところを自分のキーペア名に修正
+
 ### 3. ECSタスク定義の作成
 #### 3-1. ログ転送先がCloud Watch Logs（awslogsドライバ）の場合
 * awslogsドライバのタスク定義を作成
