@@ -55,7 +55,7 @@ Resources:
       Port: !FindInMap [DeployEnvironmentMap, !Ref EnvironmentType, Port]
       Protocol: !FindInMap [DeployEnvironmentMap, !Ref EnvironmentType, Protocol]
       HealthCheckPath: !FindInMap [TargetGroupDefinitionMap, FrontendWebApp, HealthCheckPath]
-      HealthCheckIntervalSeconds: 60
+      HealthCheckIntervalSeconds: 90
       #HealthyThresholdCount: 3
       TargetGroupAttributes:
         - Key: deregistration_delay.timeout_seconds
