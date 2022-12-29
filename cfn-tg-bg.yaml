@@ -74,7 +74,7 @@ Resources:
       Port: !FindInMap [DeployEnvironmentMap, !Ref EnvironmentType, TargetGroupPort]
       Protocol: !FindInMap [DeployEnvironmentMap, !Ref EnvironmentType, Protocol]
       HealthCheckPath: !Ref BackendHealthCheckPath
-      #HealthCheckIntervalSeconds: 30      
+      HealthCheckIntervalSeconds: 60
       #HealthCheckTimeoutSeconds: 5
       #HealthyThresholdCount: 3
       TargetGroupAttributes: 
