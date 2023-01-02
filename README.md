@@ -12,8 +12,14 @@
   * CloudWatch Container Insightsは有効化し、各メトリックスを可視化。
 * ログの転送
   * awslogsドライバを使ったCloudWatch Logsへのログ転送とFireLens+Fluent Bitによるログ転送に対応
+    * Firelensの場合はFirelensをサイドカーコンテナとして配置する必要がある。
 ![ログドライバ](img/logdriver.png)
-
+* X-Rayによる分散トレーシング・可視化
+  * X-Rayを使ってアプリケーションやAWSサービス間の処理の流れをトレースし、可視化に対応
+    * X-Rayデーモンをサイドカーコンテナとして配置する必要がある。
+![X-Ray](img/xray.png)
+  * X-Rayによる可視化
+![X-Ray可視化](img/xray-visualization.png)
 * オートスケーリング
   * 平均CPU使用率のターゲット追跡スケーリングポリシーによる例に対応している。
 ![オートスケーリング](img/autoscaling.png)
@@ -74,17 +80,30 @@ aws cloudformation create-stack --stack-name Backend-CodeBuild-Stack --template-
 ### 4. ECRへアプリケーションの最初のDockerイメージをプッシュ
 * 2つのCodeBuildプロジェクトが作成されるので、それぞれビルド実行し、ECRにDockerイメージをプッシュさせる。
 
-### 5. （FireLens利用時のみ）Fluent BitのDockerイメージプッシュ
-* firelensフォルダにある「extra-for-backend.conf」、「extra-for-backend.conf」の設定ファイル中の「bucket」をログ出力用のS3バケット名に変える
-* ログ転送にFireLensを利用する場合、サイドカーコンテナで使用するFluent BitのDockerイメージのビルドし、ECRにイメージをプッシュする
+
+### 5. X-RayデーモンのDockerイメージプッシュ
+* X-Rayを利用し分散トレーシングおよび可視化を実施するため、x-rayフォルダにあるDockerFileを使用して、X-RayデーモンのDockerイメージをビルドし、ECRにイメージをプッシュする。
 * 以下、コマンドを実行
 ```sh
-cd firelens
+cd x-ray
 set AWS_ACCOUNT_ID=(アカウントID)
 set AWS_REGION=(リージョン)　#例: set AWS_REGION=ap-northeast-1
 aws ecr get-login-password --region %AWS_REGION% | docker login --username AWS --password-stdin %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com
 ```
 ```sh
+docker build -t xray-daemon .
+docker tag xray-daemon:latest %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/xray-daemon:latest
+docker push %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/xray-daemon:latest
+```
+
+### 6. （FireLens利用時のみ）Fluent BitのDockerイメージプッシュ
+* firelensフォルダにある「extra-for-backend.conf」、「extra-for-backend.conf」の設定ファイル中の「bucket」をログ出力用のS3バケット名に変える。
+* ログ転送にFireLensを利用する場合、サイドカーコンテナで使用するFluent BitのDockerイメージをビルドし、ECRにイメージをプッシュする。
+* 以下、コマンドを実行
+```sh
+cd ..
+cd firelens
+
 docker build -t fluent-bit-bff -f DockerFileForBff .
 docker tag fluent-bit-bff:latest %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/fluent-bit-bff:latest
 docker push %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/fluent-bit-bff:latest
@@ -98,6 +117,7 @@ docker push %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/fluent-bit-backe
 ## ネットワーク環境
 ### 1. VPCおよびサブネット、Publicサブネット向けInternetGateway等の作成
 ```sh
+cd ..
 aws cloudformation validate-template --template-body file://cfn-vpc.yaml
 aws cloudformation create-stack --stack-name ECS-VPC-Stack --template-body file://cfn-vpc.yaml
 ```
