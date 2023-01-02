@@ -3,7 +3,7 @@
 ## 構成
 * システム構成図
 ![システム構成図](img/ecs.png)  
- * なお、図は、ECSからのAPログ転送にCloudWatch Logs（awslogsドライバ）を利用した場合の例を示している
+  * なお、図は、ECSからのAPログ転送にCloudWatch Logs（awslogsドライバ）を利用した場合の例を示している。
 * CI/CD
   * CodePipeline、CodeBuild、CodeDeployを使った、CI/CDに対応。
   * CDは標準のローリングアップデートとBlueGreenデプロイメントの両方に対応しており、以下のいずれか２つの構成が構築できる。
@@ -15,7 +15,7 @@
 * メトリックスのモニタリング
   * CloudWatch Container Insightsは有効化し、各メトリックスを可視化。
 * ログの転送
-  * awslogsドライバを使ったCloudWatch Logsへのログ転送とFireLens+Fluent Bitによるログ転送対応
+  * awslogsドライバを使ったCloudWatch Logsへのログ転送とFireLens+Fluent Bitによるログ転送に対応。
     * Firelensの場合はFirelensをサイドカーコンテナとして配置する必要がある。
 ![ログドライバ](img/logdriver.png)
 * X-Rayによる分散トレーシング・可視化
