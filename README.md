@@ -293,42 +293,42 @@ aws cloudformation create-stack --stack-name ECS-SERVICE-Stack --template-body f
             * (ログ出力用のバケット)/fluent-bit-logs/
 * Bastionからredis-cliでElastiCacheにアクセスしたい場合
     * 以下参考に、redis-cliをインストールして接続するとよい
-  ```sh
-  sudo amazon-linux-extras install epel -y
-  sudo yum install gcc jemalloc-devel openssl-devel tcl tcl-devel -y
-  sudo wget http://download.redis.io/redis-stable.tar.gz
-  sudo tar xvzf redis-stable.tar.gz
-  cd redis-stable
-  sudo make BUILD_TLS=yes
+```sh
+sudo amazon-linux-extras install epel -y
+sudo yum install gcc jemalloc-devel openssl-devel tcl tcl-devel -y
+sudo wget http://download.redis.io/redis-stable.tar.gz
+sudo tar xvzf redis-stable.tar.gz
+cd redis-stable
+sudo make BUILD_TLS=yes
 
-  src/redis-cli -h (ElastiCacheのEndpoint)
-  # CloudFormationの「ECS-ECACHE-Stack」スタックの出力「ElastiCachePrimaryEndPoint」
+src/redis-cli -h (ElastiCacheのEndpoint)
+# CloudFormationの「ECS-ECACHE-Stack」スタックの出力「ElastiCachePrimaryEndPoint」
 
-  > keys *  
-  ```
+> keys *  
+```
 * BastionからpsqlでAuroraにアクセスしたい場合
     * 以下参考に、Bastionにpsqlをインストールするとよい
         * https://techviewleo.com/how-to-install-postgresql-database-on-amazon-linux/
-  ```sh
-  sudo amazon-linux-extras install epel
+```sh
+sudo amazon-linux-extras install epel
 
-  sudo tee /etc/yum.repos.d/pgdg.repo<<EOF
-  [pgdg14]
-  name=PostgreSQL 14 for RHEL/CentOS 7 - x86_64
-  baseurl=http://download.postgresql.org/pub/repos/yum/14/redhat/rhel-7-x86_64
-  enabled=1
-  gpgcheck=0
-  EOF
-  
-  sudo yum makecache
-  sudo yum install postgresql14
-  
-  #DBに接続    
-  psql -h (Auroraのクラスタエンドポイント) -U postgres -d testdb    
-  # CloudFormationの「ECS-Aurora-Stack」スタックの出力「RDSClusterEndpointAddress」   
-  > select * from m_user;
-  > select * from todo;  
-  ```
+sudo tee /etc/yum.repos.d/pgdg.repo<<EOF
+[pgdg14]
+name=PostgreSQL 14 for RHEL/CentOS 7 - x86_64
+baseurl=http://download.postgresql.org/pub/repos/yum/14/redhat/rhel-7-x86_64
+enabled=1
+gpgcheck=0
+EOF
+
+sudo yum makecache
+sudo yum install postgresql14
+
+#DBに接続    
+psql -h (Auroraのクラスタエンドポイント) -U postgres -d testdb    
+# CloudFormationの「ECS-Aurora-Stack」スタックの出力「RDSClusterEndpointAddress」   
+> select * from m_user;
+> select * from todo;  
+```
 
 ### 6. Application AutoScalingの設定
 * 以下のコマンドで、ターゲット追跡スケーリングポリシーでオートスケーリング設定
