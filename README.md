@@ -63,7 +63,7 @@ aws cloudformation create-stack --stack-name ECS-IAM-Stack --template-body file:
 
 ## CI環境
 ### 1. アプリケーションのCodeCommit環境
-* 以下の2つのSpringBootAPのプロジェクトが以下のリポジトリ名でCodeCommitに格納前提
+* 以下の2つのSpringBootAPのプロジェクトが以下のリポジトリ名でCodeCommitに格納する
     * sample-bff
         * BFFのAP
         * sample-bffという別のリポジトリに資材は格納
