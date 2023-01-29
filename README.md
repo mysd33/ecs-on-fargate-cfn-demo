@@ -82,7 +82,7 @@ aws cloudformation create-stack --stack-name ECS-IAM-Stack --template-body file:
 aws cloudformation validate-template --template-body file://cfn-ecr.yaml
 aws cloudformation create-stack --stack-name ECR-Stack --template-body file://cfn-ecr.yaml
 ```
-* ２つのSpringBootAP用と、ログ転送にFireLens利用時のFluentBit用のリポジトリが作成される。
+* ２つのSpringBootAP用のリポジトリと、X-Rayデーモン用のリポジトリ、ログ転送にFireLens利用時のFluentBit用のリポジトリが作成される。
 ### 3. CodeBuildのプロジェクト作成
 * BFFアプリケーション
 ```sh
