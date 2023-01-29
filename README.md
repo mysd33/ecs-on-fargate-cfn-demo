@@ -63,14 +63,19 @@ aws cloudformation create-stack --stack-name ECS-IAM-Stack --template-body file:
 
 ## CI環境
 ### 1. アプリケーションのCodeCommit環境
-* 別途、以下の2つのSpringBootAPのプロジェクトが以下のリポジトリ名でCodeCommitにある前提
+* 以下の2つのSpringBootAPのプロジェクトが以下のリポジトリ名でCodeCommitに格納前提
     * sample-bff
         * BFFのAP
         * sample-bffという別のリポジトリに資材は格納
+        * Githubに同名の資材があるので、これをCodeCommitに格納する
+            * [sample-bff](https://github.com/mysd33/sample-bff)
     * sample-backend（またはsample-backend-dynamodb）
         * BackendのAP
         * RDBアクセス版は、sample-backendという別のリポジトリに資材は格納
         * DynamoDBアクセス版は、sample-backend-dynamodbという別のリポジトリに資材は格納
+        * Githubに同名の資材があるので、いずれかをCodeCommitに格納する
+            * [sample-backend](https://github.com/mysd33/sample-backend)
+            * [sample-backend-dynamodb](https://github.com/mysd33/sample-backend-dynamodb)
 
 ### 2. ECRの作成
 ```sh
