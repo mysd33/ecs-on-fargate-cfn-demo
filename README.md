@@ -54,7 +54,7 @@ aws cloudformation validate-template --template-body file://cfn-iam.yaml
 aws cloudformation create-stack --stack-name ECS-IAM-Stack --template-body file://cfn-iam.yaml --capabilities CAPABILITY_IAM --parameters ParameterKey=BackendCodeCommitRepositoryName,ParameterValue=sample-backend-dynamodb
 ```
 
-* CodePipeline、CodeBuildのArtifact用、キャッシュ用のS3バケット名を変えるには、それぞれのcnスタック作成時のコマンドでパラメータを指定する
+* CodePipeline、CodeBuildのArtifact用、キャッシュ用のS3バケット名を変えるには、それぞれのcfnスタック作成時のコマンドでパラメータを指定する
     * 「--parameters ParameterKey=ArtifactS3BucketName,ParameterValue=(バケット名)」
     * 「--parameters ParameterKey=CacheS3Location,ParameterValue=(パス名)」
     
