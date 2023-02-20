@@ -87,7 +87,31 @@ Mappings:
       "ContainerPort" : 8080
       "ContainerMemory" : 1024
       "Profile" : "dev,log_container,xray"
-
+  BatchAppTaskDefinitionMap:
+    Production:
+      "Memory" : 1024
+      "Cpu" : 512
+      "ContainerName" : "ecsdemo-batch-app"      
+      "ContainerImage" : "sample-batch:latest"
+      "ContainerPort" : 8080
+      "ContainerMemory" : 1024
+      "Profile" : "production,log_container"
+    Staging:
+      "Memory" : 1024
+      "Cpu" : 512
+      "ContainerName" : "ecsdemo-batch-app"                  
+      "ContainerImage" : "sample-batch:latest"
+      "ContainerPort" : 8080
+      "ContainerMemory" : 1024
+      "Profile" : "staging,log_container"
+    Dev:
+      "Memory" : 1024
+      "Cpu" : 512
+      "ContainerName" : "ecsdemo-batch-app"                  
+      "ContainerImage" : "sample-batch:latest"
+      "ContainerPort" : 8080
+      "ContainerMemory" : 1024
+      "Profile" : "dev,log_container"
 #Conditions: 
 
 Resources:
@@ -107,6 +131,14 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub ${StackPrefix}-BackendAppECSLogGroup
+
+  BatchAppECSLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub "/ecs/logs/${StackPrefix}-batch-ecs-group"
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-BatchAppECSLogGroup
 
   #ECS Task Definition for Frontend Application
   FrontendAppECSTaskDefinition:
@@ -233,6 +265,70 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub ${StackPrefix}-BackendServiceECSTaskDefinition
+  #ECS Task Definition for Batch Application
+  BatchAppECSTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${StackPrefix}-ecstask-batch-app
+      RequiresCompatibilities:
+        - FARGATE
+      Memory: !FindInMap [BatchAppTaskDefinitionMap, !Ref EnvironmentType, Memory]
+      Cpu: !FindInMap [BatchAppTaskDefinitionMap, !Ref EnvironmentType, Cpu]
+      NetworkMode: awsvpc      
+      ExecutionRoleArn:
+        Fn::ImportValue: !Sub ${StackPrefix}-ECSTaskExecutionRole-Arn
+      TaskRoleArn:
+        Fn::ImportValue: !Sub ${StackPrefix}-BatchECSTaskRole-Arn
+      ContainerDefinitions:
+        - Name: !FindInMap [BatchAppTaskDefinitionMap, !Ref EnvironmentType, ContainerName]
+          Image: 
+            Fn::Join:
+              - ""
+              - - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/
+                - !FindInMap [BatchAppTaskDefinitionMap, !Ref EnvironmentType, ContainerImage]
+          PortMappings:
+            - ContainerPort: !FindInMap [BatchAppTaskDefinitionMap, !Ref EnvironmentType, ContainerPort]
+          Environment:
+            - Name: SPRING_PROFILES_ACTIVE
+              Value: !FindInMap [BatchAppTaskDefinitionMap, !Ref EnvironmentType, Profile]            
+            - Name: API_BACKEND_URL
+              Value: 
+                Fn::Join: 
+                  - ""
+                  - - "http://"
+                    - Fn::ImportValue: !Sub ${StackPrefix}-PrivALB-DNS                
+            - Name: SPRING_DATASOURCE_URL
+              Value:
+                Fn::Join: 
+                  - ""
+                  - - "jdbc:postgresql://"
+                    - Fn::ImportValue: !Sub ${StackPrefix}-RDSClusterEndpointAddress
+                    - ":"
+                    - Fn::ImportValue: !Sub ${StackPrefix}-RDSClusterEndpoint
+                    - "/"
+                    - Fn::ImportValue: !Sub ${StackPrefix}-RDSDBName
+            - Name: SPRING_DATASOURCE_USERNAME
+              Value: !Ref DBUsername 
+            - Name: SPRING_DATASOURCE_PASSWORD
+              Value: !Ref DBPassword
+          Memory: !FindInMap [BatchAppTaskDefinitionMap, !Ref EnvironmentType, ContainerMemory]
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref BatchAppECSLogGroup
+              awslogs-region: !Ref "AWS::Region"
+              awslogs-stream-prefix: !Ref StackPrefix
+        - Name: xray-daemon
+          Image:
+            Fn::ImportValue: !Sub ${StackPrefix}-XRayDaemonECRRepositoryUri
+          Cpu: 32
+          MemoryReservation: 256          
+          PortMappings:
+            - ContainerPort: 2000              
+              Protocol: udp
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-BatchAppECSTaskDefinition
 Outputs:
   FrontendAppECSTaskDefinition:
     Description: Frontend ECS Task Definition
@@ -244,3 +340,8 @@ Outputs:
     Value: !Ref BackendServiceECSTaskDefinition
     Export:
       Name: !Sub ${StackPrefix}-BackendECS-TaskDefinition
+  BatchAppECSTaskDefinition:
+    Description: Batch ECS Task Definition
+    Value: !Ref BatchAppECSTaskDefinition
+    Export:
+      Name: !Sub ${StackPrefix}-BatchECS-TaskDefinition      

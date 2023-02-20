@@ -35,7 +35,17 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub ${StackPrefix}-Backend-Cluster
-
+  #ECS Cluster for Batch
+  BatchECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub ${StackPrefix}-Batch-Cluster
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-Batch-Cluster
 Outputs:
   FrontendECSCluster:
     Description: Frontend ECS Cluster ID
@@ -57,3 +67,13 @@ Outputs:
     Value: !Sub ${StackPrefix}-Backtend-Cluster
     Export:
       Name: !Sub ${StackPrefix}-Backend-ECSCluster-Name
+  BatchECSCluster:
+    Description: Batch ECS Cluster ID
+    Value: !Ref BatchECSCluster
+    Export:
+      Name: !Sub ${StackPrefix}-Batch-ECSCluster
+  BatchECSClusterName:
+    Description: Batch ECS Cluster Name
+    Value: !Sub ${StackPrefix}-Batch-Cluster
+    Export:
+      Name: !Sub ${StackPrefix}-Batch-ECSCluster-Name      

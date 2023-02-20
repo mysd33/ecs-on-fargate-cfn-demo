@@ -3,12 +3,19 @@
 ## 構成
 * システム構成図
     * RDB(Aurora for Postgres)のみ版
-        * 通常は、BFFアプリケーション、BackendアプリケーションともにRDB(Aurora for Postgres)にアクセスする構成で構築される。
+        * BFFアプリケーション、BackendアプリケーションともにRDB(Aurora for Postgres)にアクセスするオンラインリアルタイム処理を実現した構成が構築される。
+           * なお、上図はECSからのAPログ転送にCloudWatch Logs（awslogsドライバ）を利用した場合の例記載しているが、後述の通り、FireLens+Fluent Bitによるログ転送にも対応している。           
 ![システム構成図](img/ecs.png)    
-    * RDB(Aurora for Postgres)+DynamoDB併用版
-        * BackendアプリケーションをDynamoDBアクセス版のサンプルAPに差し変えることで、ECSからDynamoDBへのアクセスも実現した構成が構築できる。
+
+        * また、BFFアプリケーションから、SQSを介したメッセージ連携により、Batchアプリケーションを非同期実行でジョブを実行する、ディレード処理も追加対応した。
+![ディレード処理イメージ](img/ecs-sqs1.png)        
+![システム構成図](img/ecs-sqs2.png)    
+
+    * （オプションで変更可能）RDB(Aurora for Postgres)+DynamoDB併用版
+        * また、BackendアプリケーションをDynamoDBアクセス版のサンプルAPに差し変えることで、ECSからDynamoDBへのアクセスも実現した構成が構築できる。
 ![システム構成図](img/ecs-dynamodb.png)    
-    * なお、上図はECSからのAPログ転送にCloudWatch Logs（awslogsドライバ）を利用した場合の例で記載しているが、後述の通り、FireLens+Fluent Bitによるログ転送にも対応している。
+    
+
 * CI/CD
     * CodePipeline、CodeBuild、CodeDeployを使った、CI/CDに対応。
     * CDは標準のローリングアップデートとBlueGreenデプロイメントの両方に対応しており、以下のいずれか２つの構成が構築できる。
@@ -63,26 +70,29 @@ aws cloudformation create-stack --stack-name ECS-IAM-Stack --template-body file:
 
 ## CI環境
 ### 1. アプリケーションのCodeCommit環境
-* 以下の2つのSpringBootAPのプロジェクトが以下のリポジトリ名でCodeCommitに格納する
+* 以下のSpringBootAPのプロジェクトを以下のリポジトリ名でCodeCommitに格納する
     * sample-bff
         * BFFのAP
-        * sample-bffという別のリポジトリに資材は格納
         * Githubに同名の資材があるので、これをCodeCommitに格納する
             * [sample-bff](https://github.com/mysd33/sample-bff)
     * sample-backend（またはsample-backend-dynamodb）
         * BackendのAP
-        * RDBアクセス版は、sample-backendという別のリポジトリに資材は格納
-        * DynamoDBアクセス版は、sample-backend-dynamodbという別のリポジトリに資材は格納
+        * RDBアクセス版は、sample-backendというリポジトリに資材は格納
+        * DynamoDBアクセス版は、sample-backend-dynamodbというリポジトリに資材は格納
         * Githubに同名の資材があるので、いずれかをCodeCommitに格納する
             * [sample-backend](https://github.com/mysd33/sample-backend)
             * [sample-backend-dynamodb](https://github.com/mysd33/sample-backend-dynamodb)
+    * sample-batch
+        * バッチAP
+        * Githubに同名の資材があるので、これをCodeCommitに格納する
+            * [sample-batch](https://github.com/mysd33/sample-batch)
 
 ### 2. ECRの作成
 ```sh
 aws cloudformation validate-template --template-body file://cfn-ecr.yaml
 aws cloudformation create-stack --stack-name ECR-Stack --template-body file://cfn-ecr.yaml
 ```
-* ２つのSpringBootAP用のリポジトリと、X-Rayデーモン用のリポジトリ、ログ転送にFireLens利用時のFluentBit用のリポジトリが作成される。
+* 3つのSpringBootAP用のリポジトリと、X-Rayデーモン用のリポジトリ、ログ転送にFireLens利用時のFluentBit用のリポジトリが作成される。
 ### 3. CodeBuildのプロジェクト作成
 * BFFアプリケーション
 ```sh
@@ -103,6 +113,12 @@ aws cloudformation create-stack --stack-name BFF-CodeBuild-Stack --template-body
     aws cloudformation validate-template --template-body file://cfn-backend-codebuild.yaml
     aws cloudformation create-stack --stack-name Backend-CodeBuild-Stack --template-body file://cfn-backend-codebuild.yaml --parameters ParameterKey=RepositoryName,ParameterValue=sample-backend-dynamodb
     ```
+
+* Batchアプリケーション
+```sh
+aws cloudformation validate-template --template-body file://cfn-batch-codebuild.yaml
+aws cloudformation create-stack --stack-name Batch-CodeBuild-Stack --template-body file://cfn-batch-codebuild.yaml
+```
 
 * Artifact用のS3バケット名を変えるには、それぞれのcfnスタック作成時のコマンドでパラメータを指定する
     * 「--parameters ParameterKey=ArtifactS3BucketName,ParameterValue=(バケット名)」
@@ -148,6 +164,11 @@ docker push %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/fluent-bit-bff:l
 docker build -t fluent-bit-backend -f DockerFileForBackend .
 docker tag fluent-bit-backend:latest %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/fluent-bit-backend:latest
 docker push %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/fluent-bit-backend:latest
+```
+```sh
+docker build -t fluent-bit-batch -f DockerFileForBatch .
+docker tag fluent-bit-batch:latest %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/fluent-bit-batch:latest
+docker push %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/fluent-bit-batch:latest
 ```
 
 ## ネットワーク環境
@@ -196,6 +217,13 @@ aws cloudformation validate-template --template-body file://cfn-rds-aurora.yaml
 aws cloudformation create-stack --stack-name ECS-Aurora-Stack --template-body file://cfn-rds-aurora.yaml --parameters ParameterKey=DBUsername,ParameterValue=postgres ParameterKey=DBPassword,ParameterValue=password
 ```
 
+## SQS環境
+### 1. SQSの作成
+```sh
+aws cloudformation validate-template --template-body file://cfn-sqs.yaml
+aws cloudformation create-stack --stack-name ECS-SQS-Stack --template-body file://cfn-sqs.yaml
+```
+
 ## DynamoDB環境
 * DynamoDBに関しては、Backendアプリケーション起動時に、テーブルがなければ作成されるため、CloudFormationによるテーブル作成は不要となっている。
 * このため、後片付けの際、CloudFormationのスタックを削除しても、テーブル削除されないため、マネージドコンソール等から、手動で削除すること。
@@ -235,12 +263,15 @@ aws cloudformation create-stack --stack-name ECS-CLUSTER-Stack --template-body f
 aws cloudformation validate-template --template-body file://cfn-ecs-task.yaml
 aws cloudformation create-stack --stack-name ECS-TASK-Stack --template-body file://cfn-ecs-task.yaml --parameters ParameterKey=DBUsername,ParameterValue=postgres ParameterKey=DBPassword,ParameterValue=password
 ```
+
 #### 3-2. カスタムログルーティング（FireLens + Fluent Bit）の場合
 * awsfirelensドライバのタスク定義を作成
 ```sh
 aws cloudformation validate-template --template-body file://cfn-ecs-task-firelens.yaml
 aws cloudformation create-stack --stack-name ECS-TASK-Stack --template-body file://cfn-ecs-task-firelens.yaml --parameters ParameterKey=DBUsername,ParameterValue=postgres ParameterKey=DBPassword,ParameterValue=password
 ```
+
+* TODO: バッチAP（sample-batch）対応
 
 ### 4. ECSサービスの実行
 #### 4-1. ローリングアップデートの場合
@@ -250,8 +281,10 @@ aws cloudformation validate-template --template-body file://cfn-ecs-service.yaml
 aws cloudformation create-stack --stack-name ECS-SERVICE-Stack --template-body file://cfn-ecs-service.yaml
 ```
 * パラメータMinimumHealthyPercentを0%にしてローリングアップデートの時間を短縮する工夫をしている
+
 #### 4-2. BlueGreenデプロイメントの場合
 * BlueGreenデプロイメントの場合は以下のパラメータを指定して起動
+    * バッチAPについては、ローリングアップデート
 ```sh
 aws cloudformation validate-template --template-body file://cfn-ecs-service.yaml
 aws cloudformation create-stack --stack-name ECS-SERVICE-Stack --template-body file://cfn-ecs-service.yaml --parameters ParameterKey=DeployType,ParameterValue=CODE_DEPLOY
@@ -281,14 +314,17 @@ aws cloudformation create-stack --stack-name ECS-SERVICE-Stack --template-body f
     * awslogsドライバの場合は、Cloud Watch Logの以下のロググループ
         * /ecs/logs/Demo-backend-ecs-group
         * /ecs/logs/Demo-bff-ecs-group
+        * /ecs/logs/Demo-batch-ecs-group
     * FireLens+FluentBitの場合は、以下にログ出力
         * Cloud Watch Log
             * AP
                 * /ecs/logs/fluentbit-backend-group
                 * /ecs/logs/fluentbit-bff-group
+                * /ecs/logs/fluentbit-batch-group
             * FluentBit（サイドカー側のコンテナ）
                 * /ecs/logs/fluentbit-backend-sidecar
                 * /ecs/logs/fluentbit-bff-sidecar
+                * /ecs/logs/fluentbit-batch-sidecar
         * S3
             * (ログ出力用のバケット)/fluent-bit-logs/
 * Bastionからredis-cliでElastiCacheにアクセスしたい場合
@@ -353,6 +389,7 @@ aws cloudformation create-stack --stack-name ECS-AutoScaling-Stack --template-bo
 * 対象のECSサービスに関するCPU使用率に関するCloudWatchアラームが出ていることを確認
 * 対象のECSサービスがスケールアウトされ、1タスク追加され2タスクになっていることを確認
 * abコマンドが終了し、しばらくたつと、対象のECSサービスがスケールインされ、1タスクに戻っていることを確認
+
 ## CD環境（標準のローリングアップデートの場合）
 * ローリングアップデートの場合は、以下のコマンドを実行
 ### 1. ローリングアップデート対応のCodePipelineの作成
@@ -375,6 +412,10 @@ aws cloudformation create-stack --stack-name Bff-CodePipeline-Stack --template-b
     aws cloudformation validate-template --template-body file://cfn-backend-codepipeline.yaml
     aws cloudformation create-stack --stack-name Backend-CodePipeline-Stack --template-body file://cfn-backend-codepipeline.yaml --parameters ParameterKey=RepositoryName,ParameterValue=sample-backend-dynamodb
     ```
+
+* Batchアプリケーション
+    * TODO:作成
+
 
 * Artifact用のS3バケット名を変えるには、それぞれのcfnスタック作成時のコマンドでパラメータを指定する
     * 「--parameters ParameterKey=ArtifactS3BucketName,ParameterValue=(バケット名)」
@@ -419,6 +460,9 @@ aws cloudformation create-stack --stack-name Bff-CodePipeline-BG-Stack --templat
     aws cloudformation validate-template --template-body file://cfn-backend-codepipeline-bg.yaml
     aws cloudformation create-stack --stack-name Backend-CodePipeline-BG-Stack --template-body file://cfn-backend-codepipeline-bg.yaml --parameters ParameterKey=RepositoryName,ParameterValue=sample-backend-dynamodb
     ```
+
+* Batchアプリケーション
+    * TODO:作成(Batchアプリケーションはローリングアップデート)
 
 * Artifact用のS3バケット名を変えるには、それぞれのcfnスタック作成時のコマンドでパラメータを指定する
     * 「--parameters ParameterKey=ArtifactS3BucketName,ParameterValue=(バケット名)」
