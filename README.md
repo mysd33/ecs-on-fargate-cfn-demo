@@ -48,12 +48,13 @@
 
 ## 事前準備
 ### S3バケットの作成
-* 以下の目的に利用するS3バケットを用意しておく。1つでも、目的ごと別々に３つ用意てもよい。
+* 以下の目的に利用するS3バケットを用意しておく。1つでも、目的ごと別々に３つ用意してもよい。
     * CodePipeline、CodeBuildのArtifact用、キャッシュ用のS3バケット
     * BFFアプリケーション、Batchアプリケーションでファイルを連携するためのS3バケット
     * （FireLensを利用する場合）ログ出力のS3バケット
 * 後続の手順で、バケット名を変更するパラメータがあるところで指定する
-## CloudFormationのコマンドについて
+## CloudFormationのコマンドの実行
+* 以降で、AWS CLIのコマンドを使用して、CloudFormationでAWSリソースを作成していく。
 * ここでは、aws cloudformation create-stackコマンドを使っているが、deployコマンド等、使う場合は適宜コマンドを読み替えて実行すること
     * 詳細は[（参考）CloudFormationコマンド文法メモ](#参考cloudformationコマンド文法メモ)を参照
 ## IAM構築
