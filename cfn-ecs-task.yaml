@@ -29,6 +29,10 @@ Parameters:
     MaxLength: '41'
     AllowedPattern: '[a-zA-Z0-9]*'
     ConstraintDescription: must contain only alphanumeric characters.
+  AppDataS3BucketName:
+    Description: Location of S3 Bucket For Application Data
+    Type: String
+    Default: mysd33bucket123
 Mappings: 
   FrontendAppTaskDefinitionMap:
     Production:
@@ -38,16 +42,15 @@ Mappings:
       #"ContainerImage" : "mynavi-sample-ecs-bff:latest"
       "ContainerImage" : "sample-bff:latest"
       "ContainerPort" : 8080
-      "ContainerMemory" : 1024      
+      "ContainerMemory" : 1024
       "Profile" : "production,log_container,xray"
-      #"Profile" : "dev,log_container"
     Staging:
       "Memory" : 1024
       "Cpu" : 512
       "ContainerName" : "ecsdemo-frontend-app"
       #"ContainerImage" : "mynavi-sample-ecs-bff:latest"
       "ContainerImage" : "sample-bff:latest"
-      "ContainerPort" : 8080      
+      "ContainerPort" : 8080
       "ContainerMemory" : 1024
       "Profile" : "staging,log_container,xray"
     Dev:
@@ -171,7 +174,16 @@ Resources:
                 Fn::Join: 
                   - ""
                   - - "http://"
-                    - Fn::ImportValue: !Sub ${StackPrefix}-PrivALB-DNS                
+                    - Fn::ImportValue: !Sub ${StackPrefix}-PrivALB-DNS
+            - Name: DELAYED_BATCH_QUEUE
+              Value:
+                Fn::ImportValue: !Sub ${StackPrefix}-SQSQueueName
+            - Name: AWS_SQS_REGION
+              Value: !Ref AWS::Region
+            - Name: AWS_S3_BUCKET
+              Value: !Ref AppDataS3BucketName
+            - Name: AWS_S3_REGION
+              Value: !Ref AWS::Region
             - Name: SPRING_REDIS_HOST
               Value:
                 Fn::ImportValue: !Sub ${StackPrefix}-ECachePrimaryEndPoint
@@ -247,7 +259,7 @@ Resources:
               Value: !Ref DBUsername 
             - Name: SPRING_DATASOURCE_PASSWORD
               Value: !Ref DBPassword              
-          Memory: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvironmentType, ContainerMemory]          
+          Memory: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvironmentType, ContainerMemory]
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -291,6 +303,15 @@ Resources:
           Environment:
             - Name: SPRING_PROFILES_ACTIVE
               Value: !FindInMap [BatchAppTaskDefinitionMap, !Ref EnvironmentType, Profile]            
+            - Name: AWS_SQS_LISTENER_QUEUENAME
+              Value:
+                Fn::ImportValue: !Sub ${StackPrefix}-SQSQueueName             
+            - Name: AWS_SQS_REGION
+              Value: !Ref AWS::Region
+            - Name: AWS_S3_BUCKET
+              Value: !Ref AppDataS3BucketName
+            - Name: AWS_S3_REGION
+              Value: !Ref AWS::Region              
             - Name: API_BACKEND_URL
               Value: 
                 Fn::Join: 
@@ -344,4 +365,4 @@ Outputs:
     Description: Batch ECS Task Definition
     Value: !Ref BatchAppECSTaskDefinition
     Export:
-      Name: !Sub ${StackPrefix}-BatchECS-TaskDefinition      
+      Name: !Sub ${StackPrefix}-BatchECS-TaskDefinition

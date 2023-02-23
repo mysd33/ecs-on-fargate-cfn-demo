@@ -40,6 +40,11 @@ Resources:
         - Key: Name
           Value: !Sub ${StackPrefix}-DLQueue          
 Outputs:
+  SourceQueueName:
+    Description: Source Queue Name
+    Value: !Ref QueueName
+    Export:
+      Name: !Sub ${StackPrefix}-SQSQueueName
   SourceQueueURL: 
     Description: URL of Source Queue
     Value: !Ref SourceQueue

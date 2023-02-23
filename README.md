@@ -3,24 +3,30 @@
 ## 構成
 * システム構成図
     * RDB(Aurora for Postgres)のみ版
-        * BFFアプリケーション、BackendアプリケーションともにRDB(Aurora for Postgres)にアクセスするオンラインリアルタイム処理を実現した構成が構築される。
-           * なお、上図はECSからのAPログ転送にCloudWatch Logs（awslogsドライバ）を利用した場合の例記載しているが、後述の通り、FireLens+Fluent Bitによるログ転送にも対応している。           
+        * SpringBootを用いた、BFFアプリケーション、Backendアプリケーション、BatchアプリケーションをECS上に実現した構成が構築される。
+        * 通常は、DBとして、RDB(Aurora for Postgres)のみを使用した構成となっている。
+        * なお、上図はECSからのAPログ転送にCloudWatch Logs（awslogsドライバ）を利用した場合の例記載しているが、後述の通り、FireLens+Fluent Bitによるログ転送にも対応している。           
 ![システム構成図](img/ecs.png)    
 
-        * また、BFFアプリケーションから、SQSを介したメッセージ連携により、Batchアプリケーションを非同期実行でジョブを実行する、ディレード処理も追加対応した。
-![ディレード処理イメージ](img/ecs-sqs1.png)        
-![システム構成図](img/ecs-sqs2.png)    
+    * DynamoDB併用版
+        * BackendアプリケーションをDynamoDBアクセス版のサンプルAPに差し変えることで、ECSからDynamoDBへのアクセスも実現した構成が構築できる。
+![システム構成図](img/ecs-dynamodb.png)      
 
-    * （オプションで変更可能）RDB(Aurora for Postgres)+DynamoDB併用版
-        * また、BackendアプリケーションをDynamoDBアクセス版のサンプルAPに差し変えることで、ECSからDynamoDBへのアクセスも実現した構成が構築できる。
-![システム構成図](img/ecs-dynamodb.png)    
-    
+* 処理方式
+    * オンライン処理方式
+        * BFFアプリケーションからBackendアプリケーションがAPI連携しつつユーザへUIを提供するオンラインリアルタイム処理を実現した構成が構築される
+![オンラインリアルタイム処理イメージ](img/ecs-online.png) 
+
+    * バッチ処理方式    
+        * また、BFFアプリケーションから、SQSを介したメッセージ連携により、Batchアプリケーションを非同期実行でジョブを実行するディレードや準バッチ処理にも対応している。
+![ディレード処理イメージ](img/ecs-batch.png) 
 
 * CI/CD
     * CodePipeline、CodeBuild、CodeDeployを使った、CI/CDに対応。
-    * CDは標準のローリングアップデートとBlueGreenデプロイメントの両方に対応しており、以下のいずれか２つの構成が構築できる。
+    * CDは標準のローリングアップデートとBlueGreenデプロイメントの２つのリリース方式に対応している。（バッチAPは、ELB未使用のためローリングアップデートのみ対応）
         * ローリングアップデート
 ![ローリングアップデート](img/ecs-rolling-update.png)
+
         * BlueGreenデプロメント
 ![BlueGreenデプロイメント](img/ecs-bluegreen-deployment.png)
 
@@ -41,14 +47,16 @@
 ![オートスケーリング](img/autoscaling.png)
 
 ## 事前準備
-* CodePipeline、CodeBuildのArtifact用、キャッシュ用のS3バケットを作成しておく
-* FireLensを利用する場合はログ出力のS3バケットも作成しておく
-    * 後続の手順で、バケット名を変更するパラメータがあるところで指定
-
+### S3バケットの作成
+* 以下の目的に利用するS3バケットを用意しておく。1つでも、目的ごと別々に用意してもよい。
+    * CodePipeline、CodeBuildのArtifact用、キャッシュ用のS3バケット
+    * BFFアプリケーション、Batchアプリケーションでファイルを連携するためのS3バケット
+    * （FireLensを利用する場合）ログ出力のS3バケット
+* 後続の手順で、バケット名を変更するパラメータがあるところで指定する
 ## CloudFormationのコマンドについて
 * ここでは、aws cloudformation create-stackコマンドを使っているが、deployコマンド等、使う場合は適宜コマンドを読み替えて実行すること
     * 詳細は[（参考）CloudFormationコマンド文法メモ](#参考cloudformationコマンド文法メモ)を参照
-## IAM
+## IAM構築
 ### 1. IAMの作成
 * BackendアプリケーションがRDBアクセス版の場合
 ```sh
@@ -65,10 +73,9 @@ aws cloudformation create-stack --stack-name ECS-IAM-Stack --template-body file:
     * 「--parameters ParameterKey=ArtifactS3BucketName,ParameterValue=(バケット名)」
     * 「--parameters ParameterKey=CacheS3Location,ParameterValue=(パス名)」
     
-* TBD
-  * IAMポリシーの記載は精査中
+* TBD:　IAMポリシーの記載は精査中
 
-## CI環境
+## CI環境構築
 ### 1. アプリケーションのCodeCommit環境
 * 以下のSpringBootAPのプロジェクトを以下のリポジトリ名でCodeCommitに格納する
     * sample-bff
@@ -171,7 +178,7 @@ docker tag fluent-bit-batch:latest %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazona
 docker push %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/fluent-bit-batch:latest
 ```
 
-## ネットワーク環境
+## ネットワーク環境構築
 ### 1. VPCおよびサブネット、Publicサブネット向けInternetGateway等の作成
 ```sh
 cd ..
@@ -200,7 +207,7 @@ aws cloudformation validate-template --template-body file://cfn-ngw.yaml
 aws cloudformation create-stack --stack-name ECS-NATGW-Stack --template-body file://cfn-ngw.yaml
 ```
 
-## キャッシュ（ElastiCache）環境
+## キャッシュ（ElastiCache）環境構築
 ### 1. ElastiCache for Redisのクラスタ作成
 * BFFのAP(sample-bff)ではHTTPセッションを扱うがスケールイン/アウトにも対応できるようセッションを外部化し管理するために、ElasticCache for Redis（クラスタモード無効）を作成する。
     * 作成にしばらく時間がかかる。
@@ -208,7 +215,7 @@ aws cloudformation create-stack --stack-name ECS-NATGW-Stack --template-body fil
 aws cloudformation validate-template --template-body file://cfn-ecache-redis.yaml
 aws cloudformation create-stack --stack-name ECS-ECACHE-Stack --template-body file://cfn-ecache-redis.yaml
 ```
-## RDB環境
+## RDB環境構築
 ### 1. Aurora for PostgreSQLのクラスタ作成
 * 各サンプルAPではRDBでデータ管理するため、Aurora for PostgreSQLを作成する。  
     * 作成にしばらく時間がかかる。
@@ -217,18 +224,18 @@ aws cloudformation validate-template --template-body file://cfn-rds-aurora.yaml
 aws cloudformation create-stack --stack-name ECS-Aurora-Stack --template-body file://cfn-rds-aurora.yaml --parameters ParameterKey=DBUsername,ParameterValue=postgres ParameterKey=DBPassword,ParameterValue=password
 ```
 
-## SQS環境
+## SQS環境構築
 ### 1. SQSの作成
 ```sh
 aws cloudformation validate-template --template-body file://cfn-sqs.yaml
 aws cloudformation create-stack --stack-name ECS-SQS-Stack --template-body file://cfn-sqs.yaml
 ```
 
-## DynamoDB環境
+## DynamoDB環境構築
 * DynamoDBに関しては、Backendアプリケーション起動時に、テーブルがなければ作成されるため、CloudFormationによるテーブル作成は不要となっている。
 * このため、後片付けの際、CloudFormationのスタックを削除しても、テーブル削除されないため、マネージドコンソール等から、手動で削除すること。
 
-## コンテナ（ECS）環境
+## コンテナ（ECS）環境構築
 ### 1. ALBの作成
 * ECSの前方で動作するALBとデフォルトのTarget Group等を作成
     * パラメータTargateGroupAttributesに「deregistration_delay.timeout_seconds」を「60」で設定し、ローリングアップデートの時間を短縮する工夫している。
@@ -244,7 +251,6 @@ aws cloudformation create-stack --stack-name ECS-ALB-Stack --template-body file:
 aws cloudformation validate-template --template-body file://cfn-tg-bg.yaml
 aws cloudformation create-stack --stack-name ECS-TG-BG-Stack --template-body file://cfn-tg-bg.yaml
 ```
-* TBD: バックエンドサービスをALBではなく、CloudMapによるサービスディスカバリを使ったサンプル作成を検討
 
 * ~~手順削除：ListenerRuleを使ったTargetGroupの設定~~
 ~~aws cloudformation validate-template --template-body file://cfn-tg.yaml~~
@@ -264,6 +270,9 @@ aws cloudformation validate-template --template-body file://cfn-ecs-task.yaml
 aws cloudformation create-stack --stack-name ECS-TASK-Stack --template-body file://cfn-ecs-task.yaml --parameters ParameterKey=DBUsername,ParameterValue=postgres ParameterKey=DBPassword,ParameterValue=password
 ```
 
+* AP内のデータ保存用のS3バケット名を変えるには、それぞれのcfnスタック作成時のコマンドでパラメータを指定する
+    * 「--parameters ParameterKey=AppDataS3BucketName,ParameterValue=(バケット名)」
+
 #### 3-2. カスタムログルーティング（FireLens + Fluent Bit）の場合
 * awsfirelensドライバのタスク定義を作成
 ```sh
@@ -271,7 +280,8 @@ aws cloudformation validate-template --template-body file://cfn-ecs-task-firelen
 aws cloudformation create-stack --stack-name ECS-TASK-Stack --template-body file://cfn-ecs-task-firelens.yaml --parameters ParameterKey=DBUsername,ParameterValue=postgres ParameterKey=DBPassword,ParameterValue=password
 ```
 
-* TODO: バッチAP（sample-batch）対応
+* AP内のデータ保存用のS3バケット名を変えるには、それぞれのcfnスタック作成時のコマンドでパラメータを指定する
+    * 「--parameters ParameterKey=AppDataS3BucketName,ParameterValue=(バケット名)」
 
 ### 4. ECSサービスの実行
 #### 4-1. ローリングアップデートの場合
@@ -390,7 +400,7 @@ aws cloudformation create-stack --stack-name ECS-AutoScaling-Stack --template-bo
 * 対象のECSサービスがスケールアウトされ、1タスク追加され2タスクになっていることを確認
 * abコマンドが終了し、しばらくたつと、対象のECSサービスがスケールインされ、1タスクに戻っていることを確認
 
-## CD環境（標準のローリングアップデートの場合）
+## CD環境構築（ローリングアップデートの場合）
 * ローリングアップデートの場合は、以下のコマンドを実行
 ### 1. ローリングアップデート対応のCodePipelineの作成
 * BFFアプリケーション
@@ -414,8 +424,10 @@ aws cloudformation create-stack --stack-name Bff-CodePipeline-Stack --template-b
     ```
 
 * Batchアプリケーション
-    * TODO:作成
-
+```sh
+aws cloudformation validate-template --template-body file://cfn-batch-codepipeline.yaml
+aws cloudformation create-stack --stack-name Batch-CodePipeline-Stack --template-body file://cfn-batch-codepipeline.yaml
+```
 
 * Artifact用のS3バケット名を変えるには、それぞれのcfnスタック作成時のコマンドでパラメータを指定する
     * 「--parameters ParameterKey=ArtifactS3BucketName,ParameterValue=(バケット名)」
@@ -426,13 +438,17 @@ aws cloudformation create-stack --stack-name Bff-CodePipeline-Stack --template-b
 * 何らかのソースコードの変更を加えて、CodeCommitにプッシュする
 * CodePipelineのパイプラインが実行され、新しいAPがデプロイされることを確認する
 
-## CD環境（標準のBlueGreenデプロイメントの場合）
+## CD環境構築（BlueGreenデプロイメントの場合）
 * BlueGreenデプロイメントの場合は、以下のコマンドを実行
 ### 1. CodeDeployの作成
+* BFFアプリケーション
 ```sh
 aws cloudformation validate-template --template-body file://cfn-bff-codedeploy.yaml
 aws cloudformation create-stack --stack-name Bff-CodeDeploy-Stack --template-body file://cfn-bff-codedeploy.yaml
+```
 
+* Backendアプリケーション
+```sh
 aws cloudformation validate-template --template-body file://cfn-backend-codedeploy.yaml
 aws cloudformation create-stack --stack-name Backend-CodeDeploy-Stack --template-body file://cfn-backend-codedeploy.yaml
 ```
@@ -462,7 +478,11 @@ aws cloudformation create-stack --stack-name Bff-CodePipeline-BG-Stack --templat
     ```
 
 * Batchアプリケーション
-    * TODO:作成(Batchアプリケーションはローリングアップデート)
+    * BatchアプリケーションはBlueGreenデプロイメント未対応のため、ローリングアップデート
+```sh
+aws cloudformation validate-template --template-body file://cfn-batch-codepipeline.yaml
+aws cloudformation create-stack --stack-name Batch-CodePipeline-Stack --template-body file://cfn-batch-codepipeline.yaml
+```    
 
 * Artifact用のS3バケット名を変えるには、それぞれのcfnスタック作成時のコマンドでパラメータを指定する
     * 「--parameters ParameterKey=ArtifactS3BucketName,ParameterValue=(バケット名)」
