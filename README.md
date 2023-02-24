@@ -212,6 +212,8 @@ aws cloudformation create-stack --stack-name ECS-NATGW-Stack --template-body fil
 ### 1. ElastiCache for Redisのクラスタ作成
 * BFFのAP(sample-bff)ではHTTPセッションを扱うがスケールイン/アウトにも対応できるようセッションを外部化し管理するために、ElasticCache for Redis（クラスタモード無効）を作成する。
     * 作成にしばらく時間がかかる。
+    * RedisのKeyspace-Notificationを有効化して、キーの有効期限切れ（セッションタイムアウト）の検知ができるようにするため、パラメータグループに「notify-keyspace-events: gxE」指定
+        * https://aws.amazon.com/jp/premiumsupport/knowledge-center/elasticache-redis-keyspace-notifications/
 ```sh
 aws cloudformation validate-template --template-body file://cfn-ecache-redis.yaml
 aws cloudformation create-stack --stack-name ECS-ECACHE-Stack --template-body file://cfn-ecache-redis.yaml
