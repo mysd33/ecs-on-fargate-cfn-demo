@@ -228,15 +228,21 @@ aws cloudformation create-stack --stack-name ECS-NATGW-Stack --template-body fil
 ```
 
 ## キャッシュ（ElastiCache）環境構築
-### 1. ElastiCache for Redisのクラスタ作成
-* BFFのAP(sample-bff)ではHTTPセッションを扱うがスケールイン/アウトにも対応できるようセッションを外部化し管理するために、ElasticCache for Redis（クラスタモード無効）を作成する。
+### 1. ElastiCache for Valkey(Redis互換)のクラスタ作成
+* BFFのAP(sample-bff)ではHTTPセッションを扱うがスケールイン/アウトにも対応できるようセッションを外部化し管理するために、ElasticCache for Valkey（クラスタモード無効）を作成する。
     * 作成にしばらく時間がかかる。
     * RedisのKeyspace-Notificationを有効化して、キーの有効期限切れ（セッションタイムアウト）の検知ができるようにするため、パラメータグループに「notify-keyspace-events: gxE」指定
         * https://aws.amazon.com/jp/premiumsupport/knowledge-center/elasticache-redis-keyspace-notifications/
 ```sh
-aws cloudformation validate-template --template-body file://cfn-ecache-redis.yaml
-aws cloudformation create-stack --stack-name ECS-ECACHE-Stack --template-body file://cfn-ecache-redis.yaml
+aws cloudformation validate-template --template-body file://cfn-ecache-valkey.yaml
+aws cloudformation create-stack --stack-name ECS-ECACHE-Stack --template-body file://cfn-ecache-valkey.yaml
 ```
+
+> [!NOTE]
+> Redisのライセンスをクラウドベンダなどによる商用サービスを制限するものに変更したため、AWSは、ElastiCacheで、RedisをフォークしたValkeyのサポートを開始しており、Redisよりも価格面、性能面でもメリットがありそうなので、Valkeyを利用するように変更した。
+> https://aws.amazon.com/jp/blogs/news/amazon-elasticache-and-amazon-memorydb-announce-support-for-valkey/
+> https://ca-srg.dev/6d99a5ff263346cbaebec589ee744db1
+
 ## RDB環境構築
 ### 1. Secrets Managerの作成
 * Auroraの認証情報をSecretsManagerに作成する。
@@ -392,11 +398,27 @@ aws cloudformation create-stack --stack-name ECS-SCHEDULE-EVENT-Stack --template
 ```sh
 sudo yum install redis6 -y
 
-redis6-cli -h (ElastiCacheのEndpoint)
+redis6-cli -h (ElastiCacheのEndpoint) --tls
 # CloudFormationの「ECS-ECACHE-Stack」スタックの出力「ElastiCachePrimaryEndPoint」
 
 > keys *  
 ```
+
+* valkey-cliを使用したい場合
+    * 以下を参考に、valkey-cliをインストールして接続するとよい
+        * https://aws.amazon.com/jp/blogs/news/get-started-with-amazon-elasticache-for-valkey/
+
+```sh
+sudo yum install gcc jemalloc-devel openssl-devel tcl tcl-devel -y 
+cd ~
+wget https://github.com/valkey-io/valkey/archive/refs/tags/7.2.7.tar.gz
+tar xvzf 7.2.7.tar.gz 
+cd valkey-7.2.7/ 
+sudo make BUILD_TLS=yes install
+
+valkey-cli -h (ElastiCacheのEndpoint) --tls
+```
+
 * BastionからpsqlでAuroraにアクセスしたい場合
    * 以下参考に、Bastionにpsqlをインストールするとよい
         * https://docs.aws.amazon.com/ja_jp/AmazonRDS/latest/UserGuide/CHAP_GettingStarted.CreatingConnecting.PostgreSQL.html#CHAP_GettingStarted.Connecting.PostgreSQL
