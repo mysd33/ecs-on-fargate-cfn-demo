@@ -238,12 +238,23 @@ aws cloudformation validate-template --template-body file://cfn-ecache-redis.yam
 aws cloudformation create-stack --stack-name ECS-ECACHE-Stack --template-body file://cfn-ecache-redis.yaml
 ```
 ## RDB環境構築
-### 1. Aurora Serverless v2 for PostgreSQLのクラスタおよびSecrets Managerの作成
+### 1. Secrets Managerの作成
+* Auroraの認証情報をSecretsManagerに作成する。
+```sh
+aws cloudformation validate-template --template-body file://cfn-secrets.yaml
+aws cloudformation create-stack --stack-name Demo-SM-Stack --template-body file://cfn-secrets.yaml --parameters ParameterKey=AuroraDBUsername,ParameterValue=postgres
+```
+* SecretsManagerが生成したパスワード等を確認しておく
+```sh
+aws secretsmanager get-secret-value --secret-id Demo-RDS-Secrets
+```
+
+### 2. Aurora Serverless v2 for PostgreSQLのクラスタの作成
 * 各サンプルAPではRDBでデータ管理するため、Aurora Serverless v2 for PostgreSQLを作成する。  
-    * 作成にしばらく時間がかかる。
+    * 作成にしばらく時間がかかる。（20分程度）
 ```sh
 aws cloudformation validate-template --template-body file://cfn-rds-aurora.yaml
-aws cloudformation create-stack --stack-name ECS-Aurora-Stack --template-body file://cfn-rds-aurora.yaml --parameters ParameterKey=DBUsername,ParameterValue=postgres ParameterKey=DBPassword,ParameterValue=password
+aws cloudformation create-stack --stack-name ECS-Aurora-Stack --template-body file://cfn-rds-aurora.yaml
 ```
 
 ## SQS環境構築
@@ -377,39 +388,28 @@ aws cloudformation create-stack --stack-name ECS-SCHEDULE-EVENT-Stack --template
             * (ログ出力用のバケット)/fluent-bit-logs/
 * Bastionからredis-cliでElastiCacheにアクセスしたい場合
     * 以下参考に、redis-cliをインストールして接続するとよい
+        * https://docs.aws.amazon.com/ja_jp/AmazonElastiCache/latest/dg/set-up.html#Download-and-install-cli
 ```sh
-sudo amazon-linux-extras install epel -y
-sudo yum install gcc jemalloc-devel openssl-devel tcl tcl-devel -y
-sudo wget http://download.redis.io/redis-stable.tar.gz
-sudo tar xvzf redis-stable.tar.gz
-cd redis-stable
-sudo make BUILD_TLS=yes
+sudo yum install redis6 -y
 
-src/redis-cli -h (ElastiCacheのEndpoint)
+redis6-cli -h (ElastiCacheのEndpoint)
 # CloudFormationの「ECS-ECACHE-Stack」スタックの出力「ElastiCachePrimaryEndPoint」
 
 > keys *  
 ```
 * BastionからpsqlでAuroraにアクセスしたい場合
-    * 以下参考に、Bastionにpsqlをインストールするとよい
-        * https://techviewleo.com/how-to-install-postgresql-database-on-amazon-linux/
+   * 以下参考に、Bastionにpsqlをインストールするとよい
+        * https://docs.aws.amazon.com/ja_jp/AmazonRDS/latest/UserGuide/CHAP_GettingStarted.CreatingConnecting.PostgreSQL.html#CHAP_GettingStarted.Connecting.PostgreSQL
 ```sh
-sudo amazon-linux-extras install -y epel
+sudo dnf update -y
 
-sudo tee /etc/yum.repos.d/pgdg.repo<<EOF
-[pgdg14]
-name=PostgreSQL 14 for RHEL/CentOS 7 - x86_64
-baseurl=http://download.postgresql.org/pub/repos/yum/14/redhat/rhel-7-x86_64
-enabled=1
-gpgcheck=0
-EOF
-
-sudo yum makecache
-sudo yum install -y postgresql14
+sudo dnf install postgresql16 -y
 
 #DBに接続    
 psql -h (Auroraのクラスタエンドポイント) -U postgres -d testdb    
-# CloudFormationの「ECS-Aurora-Stack」スタックの出力「RDSClusterEndpointAddress」   
+# CloudFormationの「ECS-Aurora-Stack」スタックの出力「RDSClusterEndpointAddress」の値を参照
+# パスワードは、SecretsManagerの「Demo-RDS-Secrets」の「password」の値を参照し入力
+
 > select * from m_user;
 > select * from todo;  
 ```
