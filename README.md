@@ -239,8 +239,9 @@ aws cloudformation create-stack --stack-name ECS-ECACHE-Stack --template-body fi
 ```
 
 > [!NOTE]
-> Redisのライセンスをクラウドベンダなどによる商用サービスを制限するものに変更したため、AWSは、ElastiCacheで、RedisをフォークしたValkeyのサポートを開始しており、Redisよりも価格面、性能面でもメリットがありそうなので、Valkeyを利用するように変更した。
+> Redis7.4からのライセンスがクラウドベンダによる商用サービスを制限するものに変更されるため、AWSは、ElastiCacheで、RedisをフォークしたValkeyのサポートを開始しており、Redisよりも価格面、性能面でもメリットがありそうなので、Valkeyを利用するように変更した。
 > https://aws.amazon.com/jp/blogs/news/amazon-elasticache-and-amazon-memorydb-announce-support-for-valkey/
+> https://zenn.dev/ktny/articles/9ccd18cd19c26d
 > https://ca-srg.dev/6d99a5ff263346cbaebec589ee744db1
 
 ## RDB環境構築
