@@ -525,7 +525,7 @@ aws cloudformation create-stack --stack-name Backend-CodeDeploy-Stack --template
 * 現状、テンプレート内の「DeploymentConfigName」が線形リリース（「CodeDeployDefault.ECSLinear10PercentEvery1Minutes」）になっているが、一度に切り替えたい場合は、通常のBlueGreenデプロイメント（CodeDeployDefault.ECSAllAtOnce）に変えるとよい。    
 ### 2. BlueGreenデプロイメント対応のCodePipelineの作成
 
-> [WARNING]
+> [!WARNING]
 > 以前、実施できたはずの、BFFアプリケーションのブルーグリーンデプロイメントが、なぜか、
 > 既に8080ポートが使用されている（Web server failed to start. Port 8080 was already in use.）というエラーが出てしまい
 > APが起動できず、が失敗する。  
