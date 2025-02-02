@@ -26,6 +26,7 @@ Mappings:
       "ContainerImage" : "sample-bff:latest"
       "ContainerPort" : 8080
       "Profile" : "production,log_container,xray"
+      "HealthCheck" : "curl -f http://localhost:8080/actuator/health || exit 1"      
     Staging:
       "Memory" : 2048
       "Cpu" : 1024
@@ -33,6 +34,7 @@ Mappings:
       "ContainerImage" : "sample-bff:latest"
       "ContainerPort" : 8080
       "Profile" : "staging,log_container,xray"
+      "HealthCheck" : "curl -f http://localhost:8080/actuator/health || exit 1"      
     Dev:
       "Memory" : 2048
       "Cpu" : 1024
@@ -40,6 +42,7 @@ Mappings:
       "ContainerImage" : "sample-bff:latest"
       "ContainerPort" : 8080
       "Profile" : "dev,log_container,xray"
+      "HealthCheck" : "curl -f http://localhost:8080/actuator/health || exit 1"
   BackendServiceTaskDefinitionMap:
     Production:
       "Memory" : 1024
@@ -48,6 +51,7 @@ Mappings:
       "ContainerImage" : "sample-backend:latest"
       "ContainerPort" : 8080
       "Profile" : "production,log_container,xray"
+      "HealthCheck" : "curl -f http://localhost:8080/actuator/health || exit 1"      
     Staging:
       "Memory" : 1024
       "Cpu" : 512
@@ -55,6 +59,7 @@ Mappings:
       "ContainerImage" : "sample-backend:latest"
       "ContainerPort" : 8080
       "Profile" : "staging,log_container,xray"
+      "HealthCheck" : "curl -f http://localhost:8080/actuator/health || exit 1"      
     Dev:
       "Memory" : 1024
       "Cpu" : 512
@@ -62,6 +67,7 @@ Mappings:
       "ContainerImage" : "sample-backend:latest"
       "ContainerPort" : 8080
       "Profile" : "dev,log_container,xray"
+      "HealthCheck" : "curl -f http://localhost:8080/actuator/health || exit 1"      
   BatchAppTaskDefinitionMap:
     Production:
       "Memory" : 1024
@@ -70,6 +76,7 @@ Mappings:
       "ContainerImage" : "sample-batch:latest"
       "ContainerPort" : 8080
       "Profile" : "production,log_container"
+      "HealthCheck" : "curl -f http://localhost:8080/actuator/health || exit 1"      
     Staging:
       "Memory" : 1024
       "Cpu" : 512
@@ -77,6 +84,7 @@ Mappings:
       "ContainerImage" : "sample-batch:latest"
       "ContainerPort" : 8080
       "Profile" : "staging,log_container"
+      "HealthCheck" : "curl -f http://localhost:8080/actuator/health || exit 1"      
     Dev:
       "Memory" : 1024
       "Cpu" : 512
@@ -84,6 +92,7 @@ Mappings:
       "ContainerImage" : "sample-batch:latest"
       "ContainerPort" : 8080
       "Profile" : "dev,log_container"
+      "HealthCheck" : "curl -f http://localhost:8080/actuator/health || exit 1"
   ScheduleLaunchAppTaskDefinitionMap:
     Production:
       "Memory" : 1024
@@ -168,6 +177,12 @@ Resources:
               ContainerPath: /tmp                   
           PortMappings:
             - ContainerPort: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvironmentType, ContainerPort]
+          HealthCheck:
+            Command:
+              - CMD-SHELL
+              - !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvironmentType, HealthCheck]
+            Interval: 150
+            StartPeriod: 300
           Environment:
             - Name: TZ
               Value: Asia/Tokyo          
@@ -277,6 +292,12 @@ Resources:
               ContainerPath: /tmp                   
           PortMappings:
             - ContainerPort: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvironmentType, ContainerPort]              
+          HealthCheck:
+            Command:
+              - CMD-SHELL
+              - !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvironmentType, HealthCheck]
+            Interval: 60
+            StartPeriod: 120
           Environment:
             - Name: TZ
               Value: Asia/Tokyo          
@@ -364,6 +385,12 @@ Resources:
               ContainerPath: /tmp                   
           PortMappings:
             - ContainerPort: !FindInMap [BatchAppTaskDefinitionMap, !Ref EnvironmentType, ContainerPort]
+          HealthCheck:
+            Command:
+              - CMD-SHELL
+              - !FindInMap [BatchAppTaskDefinitionMap, !Ref EnvironmentType, HealthCheck]
+            Interval: 60
+            StartPeriod: 60
           Environment:
             - Name: TZ
               Value: Asia/Tokyo          
