@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: ECS Task Definition Template for CloudFormation Demo. Depends on cfn-iam.yaml, cfn-ecr.yaml, cfn-ecache-redis.yaml, cfn-rds-aurora.yaml, cfn-sqs.yaml
+Description: ECS Task Definition Template for CloudFormation Demo. Depends on cfn-iam.yaml, cfn-ecr.yaml, cfn-ssm-param.yaml.
 #Metadata: 
 
 Parameters: 
@@ -13,10 +13,6 @@ Parameters:
     AllowedValues: ["Dev", "Staging", "Production"]
     Default: Production
     ConstraintDescription: must be a prod or test
-  AppDataS3BucketName:
-    Description: Location of S3 Bucket For Application Data
-    Type: String
-    Default: mysd33bucket123
 Mappings: 
   FrontendAppTaskDefinitionMap:
     Production:
@@ -188,53 +184,10 @@ Resources:
               Value: Asia/Tokyo
             - Name: SPRING_PROFILES_ACTIVE
               Value: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvironmentType, Profile]            
-            - Name: API_BACKEND_URL
-              Value: 
-                Fn::Join: 
-                  - ""
-                  - - "http://"
-                    - Fn::ImportValue: !Sub ${StackPrefix}-PrivALB-DNS
-            - Name: DELAYED_BATCH_QUEUE
-              Value:
-                Fn::ImportValue: !Sub ${StackPrefix}-SQSQueueName
-            - Name: AWS_SQS_REGION
-              Value: !Ref AWS::Region
-            - Name: AWS_S3_BUCKET
-              Value: !Ref AppDataS3BucketName
-            - Name: AWS_S3_REGION
-              Value: !Ref AWS::Region
-            - Name: SPRING_DATA_REDIS_HOST
-              Value:
-                Fn::ImportValue: !Sub ${StackPrefix}-ECachePrimaryEndPoint
-            - Name: SPRING_DATA_REDIS_SSL_ENABLED
-              Value: true
-            - Name: SPRING_DATASOURCE_URL
-              Value:
-                Fn::Join: 
-                  - ""
-                  - - "jdbc:postgresql://"
-                    - Fn::ImportValue: !Sub ${StackPrefix}-RDSClusterEndpointAddress
-                    - ":"
-                    - Fn::ImportValue: !Sub ${StackPrefix}-RDSClusterEndpointPort
-                    - "/"
-                    - Fn::ImportValue: !Sub ${StackPrefix}-RDSDBName
-            - Name: RESILIENCE4J_TIMELIMITER_CONFIGS_DEFAULT_TIMEOUTDURATION
-              Value: 3s
-            #- Name: SERVER_SERVLET_SESSION_TIMEOUT
-            #  Value: 1m
-          Secrets:
-            - Name: SPRING_DATASOURCE_USERNAME
-              ValueFrom:
-                Fn::Join:
-                  - ""
-                  - - Fn::ImportValue: !Sub ${StackPrefix}-RDSSecretsManagerArn
-                    - ":username::"
-            - Name: SPRING_DATASOURCE_PASSWORD
-              ValueFrom:
-                Fn::Join:
-                  - ""
-                  - - Fn::ImportValue: !Sub ${StackPrefix}-RDSSecretsManagerArn
-                    - ":password::"
+            - Name: LOGGING_LEVEL_IO_AWSPRING_CLOUD_PARAMETERSTORE
+              Value: DEBUG
+            - Name: LOGGING_LEVEL_IO_AWSPRING_CLOUD_SECRETSMANAGER
+              Value: DEBUG
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -292,29 +245,10 @@ Resources:
               Value: Asia/Tokyo          
             - Name: SPRING_PROFILES_ACTIVE
               Value: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvironmentType, Profile]
-            - Name: SPRING_DATASOURCE_URL
-              Value:
-                Fn::Join: 
-                  - ""
-                  - - "jdbc:postgresql://"
-                    - Fn::ImportValue: !Sub ${StackPrefix}-RDSClusterEndpointAddress
-                    - ":"
-                    - Fn::ImportValue: !Sub ${StackPrefix}-RDSClusterEndpointPort
-                    - "/"
-                    - Fn::ImportValue: !Sub ${StackPrefix}-RDSDBName
-          Secrets:
-            - Name: SPRING_DATASOURCE_USERNAME
-              ValueFrom:
-                Fn::Join:
-                  - ""
-                  - - Fn::ImportValue: !Sub ${StackPrefix}-RDSSecretsManagerArn
-                    - ":username::"
-            - Name: SPRING_DATASOURCE_PASSWORD
-              ValueFrom:
-                Fn::Join:
-                  - ""
-                  - - Fn::ImportValue: !Sub ${StackPrefix}-RDSSecretsManagerArn
-                    - ":password::"
+            - Name: LOGGING_LEVEL_IO_AWSPRING_CLOUD_PARAMETERSTORE
+              Value: DEBUG
+            - Name: LOGGING_LEVEL_IO_AWSPRING_CLOUD_SECRETSMANAGER
+              Value: DEBUG              
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -371,47 +305,11 @@ Resources:
             - Name: TZ
               Value: Asia/Tokyo           
             - Name: SPRING_PROFILES_ACTIVE
-              Value: !FindInMap [BatchAppTaskDefinitionMap, !Ref EnvironmentType, Profile]            
-            - Name: AWS_SQS_LISTENER_QUEUENAME
-              Value:
-                Fn::ImportValue: !Sub ${StackPrefix}-SQSQueueName             
-            - Name: AWS_SQS_REGION
-              Value: !Ref AWS::Region
-            - Name: AWS_S3_BUCKET
-              Value: !Ref AppDataS3BucketName
-            - Name: AWS_S3_REGION
-              Value: !Ref AWS::Region              
-            - Name: API_BACKEND_URL
-              Value: 
-                Fn::Join: 
-                  - ""
-                  - - "http://"
-                    - Fn::ImportValue: !Sub ${StackPrefix}-PrivALB-DNS                
-            - Name: SPRING_DATASOURCE_URL
-              Value:
-                Fn::Join: 
-                  - ""
-                  - - "jdbc:postgresql://"
-                    - Fn::ImportValue: !Sub ${StackPrefix}-RDSClusterEndpointAddress
-                    - ":"
-                    - Fn::ImportValue: !Sub ${StackPrefix}-RDSClusterEndpointPort
-                    - "/"
-                    - Fn::ImportValue: !Sub ${StackPrefix}-RDSDBName
-            - Name: RESILIENCE4J_TIMELIMITER_CONFIGS_DEFAULT_TIMEOUTDURATION
-              Value: 3s
-          Secrets:
-            - Name: SPRING_DATASOURCE_USERNAME
-              ValueFrom:
-                Fn::Join:
-                  - ""
-                  - - Fn::ImportValue: !Sub ${StackPrefix}-RDSSecretsManagerArn
-                    - ":username::"
-            - Name: SPRING_DATASOURCE_PASSWORD
-              ValueFrom:            
-                Fn::Join:
-                  - ""
-                  - - Fn::ImportValue: !Sub ${StackPrefix}-RDSSecretsManagerArn
-                    - ":password::"
+              Value: !FindInMap [BatchAppTaskDefinitionMap, !Ref EnvironmentType, Profile]                           
+            - Name: LOGGING_LEVEL_IO_AWSPRING_CLOUD_PARAMETERSTORE
+              Value: DEBUG
+            - Name: LOGGING_LEVEL_IO_AWSPRING_CLOUD_SECRETSMANAGER
+              Value: DEBUG              
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -460,14 +358,11 @@ Resources:
             - Name: TZ
               Value: Asia/Tokyo           
             - Name: SPRING_PROFILES_ACTIVE
-              Value: !FindInMap [ScheduleLaunchAppTaskDefinitionMap, !Ref EnvironmentType, Profile]            
-            - Name: DELAYED_BATCH_QUEUES_SAMPLEBATCH_NAME
-              Value:
-                Fn::ImportValue: !Sub ${StackPrefix}-SQSQueueName
-            - Name: AWS_SQS_REGION
-              Value: !Ref AWS::Region       
-            - Name: BATCH_SCHEDULE_TARGETID
-              Value: SB_001              
+              Value: !FindInMap [ScheduleLaunchAppTaskDefinitionMap, !Ref EnvironmentType, Profile]             
+            - Name: LOGGING_LEVEL_IO_AWSPRING_CLOUD_PARAMETERSTORE
+              Value: DEBUG
+            - Name: LOGGING_LEVEL_IO_AWSPRING_CLOUD_SECRETSMANAGER
+              Value: DEBUG              
           LogConfiguration:
             LogDriver: awslogs
             Options:
