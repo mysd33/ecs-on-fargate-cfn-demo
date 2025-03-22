@@ -177,8 +177,8 @@ Resources:
             Command:
               - CMD-SHELL
               - !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvironmentType, HealthCheck]
-            Interval: 150
-            StartPeriod: 300
+            Interval: 90
+            StartPeriod: 60
           Environment:
             - Name: TZ
               Value: Asia/Tokyo          
