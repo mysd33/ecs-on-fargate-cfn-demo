@@ -160,7 +160,7 @@ aws cloudformation create-stack --stack-name ScheduleLaunch-CodeBuild-Stack --te
 * 取得したMavenリポジトリをS3にキャッシュする。キャッシュ用のS3のパス（バケット名/プレフィックス）を変えるには、それぞれのcfnスタック作成時のコマンドでパラメータを指定する
     * 「--parameters ParameterKey=CacheS3Location,ParameterValue=(パス名)」
 
-* 本当は、CloudFormationテンプレートのCodeBuildのSorceTypeをCodePipelineにするが、いったんDockerイメージ作成して動作確認したいので、今はCodeCommitになっている。動いてはいるので保留。
+* 本当は、CloudFormationテンプレートのCodeBuildのSourceTypeをCodePipelineにするが、いったんDockerイメージ作成して動作確認したいので、今はCodeCommitになっている。動いてはいるので保留。
 
 
 ### 4. ECRへアプリケーションの最初のDockerイメージをプッシュ
