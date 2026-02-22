@@ -50,9 +50,7 @@ Resources:
       Description: Batch CI Project
       Source:
         Type: CODECOMMIT
-        Location: !Sub https://git-codecommit.${AWS::Region}.amazonaws.com/v1/repos/${RepositoryName}
-        #TODO: parameterize
-        BuildSpec: buildspec-adot.yml        
+        Location: !Sub https://git-codecommit.${AWS::Region}.amazonaws.com/v1/repos/${RepositoryName}  
       SourceVersion: !Ref BranchName
       Artifacts:
         Type: S3
