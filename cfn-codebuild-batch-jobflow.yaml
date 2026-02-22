@@ -10,7 +10,7 @@ Parameters:
   ProjectName:
     Description: CodeBuild Project Name
     Type: String
-    Default: demo-batch-ci
+    Default: demo-batch-jobflow-ci
   CodeBuildEnvType:
     Description: CodeBuild Environment Type
     Type: String
@@ -24,7 +24,7 @@ Parameters:
   RepositoryName:
     Description: Source Code Repository Location of CodeCommit
     Type: String
-    Default: sample-batch
+    Default: sample-batch-jobflow
   BranchName:
     Description: CodeCommit branch name
     Type: String
@@ -51,8 +51,6 @@ Resources:
       Source:
         Type: CODECOMMIT
         Location: !Sub https://git-codecommit.${AWS::Region}.amazonaws.com/v1/repos/${RepositoryName}
-        #TODO: parameterize
-        BuildSpec: buildspec-adot.yml        
       SourceVersion: !Ref BranchName
       Artifacts:
         Type: S3
@@ -68,7 +66,7 @@ Resources:
             Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com
           - Name: REPOSITORY_URI
             Value:
-              Fn::ImportValue: !Sub ${StackPrefix}-BatchECRRepositoryUri
+              Fn::ImportValue: !Sub ${StackPrefix}-BatchJobflowECRRepositoryUri
       ServiceRole:
         Fn::ImportValue: !Sub ${StackPrefix}-CodeBuildRole-Arn
       TimeoutInMinutes: 10
@@ -86,4 +84,4 @@ Outputs:
     Description: CodeBuild Project Name
     Value: !Ref ProjectName
     Export: 
-      Name: !Sub ${StackPrefix}-Batch-CodeBuildProjectName
+      Name: !Sub ${StackPrefix}-BatchJobflow-CodeBuildProjectName
