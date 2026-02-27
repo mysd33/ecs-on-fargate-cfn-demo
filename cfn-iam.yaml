@@ -177,6 +177,40 @@ Resources:
         - Key: Name
           Value: !Sub ${StackPrefix}-ScheduleLaunchECSTaskRole
 
+  #IAM Role for Batch Jobflow Job Role
+  BatchJobflowJobRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+      ManagedPolicyArns:
+        #For X-Ray
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess        
+      Tags:
+        - Key: Name
+          Value: !Sub ${StackPrefix}-BatchJobflowJobRole
+
+  #Service Role for AWS Batch
+  AWSBatchServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: "/service-role/"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - batch.amazonaws.com
+          Action:
+          - sts:AssumeRole      
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSBatchServiceRole      
   #IAM Policy for CloudWatch Logs Access
   CloudWatchLogsPolicy:
     Type: AWS::IAM::Policy      
@@ -197,6 +231,7 @@ Resources:
       - !Ref BackendECSTaskRole
       - !Ref BatchECSTaskRole        
       - !Ref ScheduleLaunchECSTaskRole
+      - !Ref BatchJobflowJobRole
 
   #IAM Policy for CloudWatch Metrics Access
   CloudWatchMetricsPolicy:
@@ -213,7 +248,8 @@ Resources:
       - !Ref FrontendECSTaskRole
       - !Ref BackendECSTaskRole
       - !Ref BatchECSTaskRole        
-      - !Ref ScheduleLaunchECSTaskRole  
+      - !Ref ScheduleLaunchECSTaskRole
+      - !Ref BatchJobflowJobRole
   
   #IAM Policy for S3 Access(For FireLens & S3 Access by App)
   S3AccessPolicy:
@@ -235,7 +271,7 @@ Resources:
       - !Ref BackendECSTaskRole
       - !Ref BatchECSTaskRole        
       - !Ref ScheduleLaunchECSTaskRole
-
+      - !Ref BatchJobflowJobRole
   #IAM Policy for SQS Access
   SQSAccessPolicy:
     Type: AWS::IAM::Policy
@@ -315,6 +351,7 @@ Resources:
       - !Ref FrontendECSTaskRole
       - !Ref BackendECSTaskRole
       - !Ref BatchECSTaskRole
+      - !Ref BatchJobflowJobRole
 
   #IAM Policy for Systems Manager Parameter Store Access
   SSMParameterStoreAccessPolicy:
@@ -334,8 +371,9 @@ Resources:
       - !Ref BackendECSTaskRole
       - !Ref BatchECSTaskRole
       - !Ref ScheduleLaunchECSTaskRole
+      - !Ref BatchJobflowJobRole
 
-  #IAM Role for ECS Task Execution  
+  #IAM Role for ECS Task Execution and AWS Batch Execution
   ECSTaskExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -395,7 +433,7 @@ Resources:
           - Action: sts:AssumeRole
             Effect: Allow
             Principal:
-              Service: events.amazonaws.com
+              Service: scheduler.amazonaws.com
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceEventsRole
 
@@ -586,7 +624,12 @@ Outputs:
     Description: ScheduleLaunchECSTaskRole Arn
     Value: !GetAtt ScheduleLaunchECSTaskRole.Arn
     Export: 
-      Name: !Sub ${StackPrefix}-ScheduleLaunchECSTaskRole-Arn  
+      Name: !Sub ${StackPrefix}-ScheduleLaunchECSTaskRole-Arn
+  BatchJobflowJobRoleArn:
+    Description: BatchJobflowJobRole Arn
+    Value: !GetAtt BatchJobflowJobRole.Arn
+    Export: 
+      Name: !Sub ${StackPrefix}-BatchJobflowJobRole-Arn
   ECSTaskExecutionRoleArn:
     Description: ECSTaskExecutionRole Arn
     Value: !GetAtt ECSTaskExecutionRole.Arn
