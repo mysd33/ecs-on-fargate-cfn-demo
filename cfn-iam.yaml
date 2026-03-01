@@ -630,6 +630,11 @@ Outputs:
     Value: !GetAtt BatchJobflowJobRole.Arn
     Export: 
       Name: !Sub ${StackPrefix}-BatchJobflowJobRole-Arn
+  BatchServiceRoleArn:
+    Description: AWSBatchServiceRole Arn
+    Value: !GetAtt AWSBatchServiceRole.Arn
+    Export: 
+      Name: !Sub ${StackPrefix}-AWSBatchServiceRole-Arn
   ECSTaskExecutionRoleArn:
     Description: ECSTaskExecutionRole Arn
     Value: !GetAtt ECSTaskExecutionRole.Arn
