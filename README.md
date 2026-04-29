@@ -1,4 +1,10 @@
-# SpringBoot APをECS/Fargateで動作させCode系でCI/CDするCloudFormationサンプルテンプレート
+# SpringBoot APをECS/Fargateで動作させCode系でCI/CDするCloudFormationサンプルテンプレート【X-Ray SDK版】
+
+> [!WARNING]
+> 
+> X-Ray SDKおよびX-Rayデーモンは、2026年2月25日よりメンテナンスモードに入り、2027年2月25日にサポート終了となるため、本サンプルコードもメンテナンス終了する。
+> 今後は[ADOT版のサンプル](https://github.com/mysd33/ecs-on-fargate-adot-cfn-demo)を参照すること。
+
 
 ## 構成
 * システム構成図
